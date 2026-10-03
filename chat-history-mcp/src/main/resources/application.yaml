@@ -1,0 +1,43 @@
+server:
+  port: 8082
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 5s
+  application:
+    name: chat-history-mcp
+  datasource:
+    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5433/jdd}
+    username: ${POSTGRES_USER:jdd}
+    password: ${POSTGRES_PASSWORD:jdd}
+  ai:
+    mcp:
+      server:
+        name: chat-history-mcp
+        version: 1.0.0
+        # Stateless Streamable HTTP: no server-side session, so instances can restart or scale out freely.
+        protocol: STATELESS
+        instructions: Semantic cache of previously answered questions.
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      embedding:
+        model: ${EMBEDDING_MODEL:nomic-embed-text}
+      init:
+        pull-model-strategy: ${OLLAMA_PULL_MODEL_STRATEGY:when_missing}
+        chat:
+          include: false
+    model:
+      chat: none
+    vectorstore:
+      pgvector:
+        table-name: chat_history
+        dimensions: ${EMBEDDING_DIMENSIONS:768}
+        initialize-schema: true
+chat-history:
+  # Floor for returning candidates (with their scores). Whether a candidate is good enough to answer
+  # from is the agent's decision (assistant.cache.hit-threshold), so the trace shows near-misses too.
+  similarity-threshold: ${CHAT_HISTORY_SIMILARITY_THRESHOLD:0.5}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus

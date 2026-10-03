@@ -1,0 +1,40 @@
+server:
+  port: 8081
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 5s
+  application:
+    name: rag-search-mcp
+  datasource:
+    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5433/jdd}
+    username: ${POSTGRES_USER:jdd}
+    password: ${POSTGRES_PASSWORD:jdd}
+  ai:
+    mcp:
+      server:
+        name: rag-search-mcp
+        version: 1.0.0
+        # Stateless Streamable HTTP: no server-side session, so instances can restart or scale out freely.
+        protocol: STATELESS
+        instructions: Semantic search over the JDD 2026 wiki.
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      embedding:
+        model: ${EMBEDDING_MODEL:nomic-embed-text}
+      init:
+        pull-model-strategy: ${OLLAMA_PULL_MODEL_STRATEGY:when_missing}
+        chat:
+          include: false
+    model:
+      chat: none
+    vectorstore:
+      pgvector:
+        table-name: wiki
+        id-type: text
+        dimensions: ${EMBEDDING_DIMENSIONS:768}
+        initialize-schema: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
