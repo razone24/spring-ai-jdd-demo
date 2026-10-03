@@ -1,4 +1,4 @@
-package com.springai.jdd.assistant.agent.chat;
+package com.springai.jdd.assistant.agent;
 
 import org.springframework.stereotype.Component;
 
@@ -17,7 +17,7 @@ public class Today {
 
     private final Clock clock;
 
-    public Today(Clock clock, ChatProperties properties) {
+    public Today(Clock clock, AgentProperties properties) {
         this.clock = hasText(properties.today()) ? pinTo(properties.today()) : clock;
     }
 

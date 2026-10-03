@@ -1,4 +1,4 @@
-package com.springai.jdd.assistant.agent.chat.loop;
+package com.springai.jdd.assistant.harness;
 
 import com.springai.jdd.assistant.audit.cost.TokenUsage;
 import org.springframework.ai.chat.metadata.Usage;

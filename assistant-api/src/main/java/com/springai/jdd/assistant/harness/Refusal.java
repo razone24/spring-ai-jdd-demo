@@ -1,4 +1,4 @@
-package com.springai.jdd.assistant.agent.refusal;
+package com.springai.jdd.assistant.harness;
 
 import java.util.Optional;
 

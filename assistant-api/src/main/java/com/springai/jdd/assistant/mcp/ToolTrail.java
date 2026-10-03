@@ -1,4 +1,4 @@
-package com.springai.jdd.assistant.agent.trail;
+package com.springai.jdd.assistant.mcp;
 
 import java.util.ArrayList;
 import java.util.List;

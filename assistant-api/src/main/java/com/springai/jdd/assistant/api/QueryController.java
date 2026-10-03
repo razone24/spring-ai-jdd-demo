@@ -1,6 +1,6 @@
 package com.springai.jdd.assistant.api;
 
-import com.springai.jdd.assistant.agent.QueryOrchestrator;
+import com.springai.jdd.assistant.agent.OrchestratorAgent;
 import com.springai.jdd.assistant.api.exception.InvalidQueryException;
 import com.springai.jdd.assistant.api.dto.QueryRequest;
 import com.springai.jdd.assistant.api.dto.QueryResponse;
@@ -21,7 +21,7 @@ class QueryController {
     private static final String EMPTY_PROMPT_MESSAGE = "A prompt is required.";
     private static final String LONG_PROMPT_MESSAGE = "A prompt may be at most %d characters.";
 
-    private final QueryOrchestrator orchestrator;
+    private final OrchestratorAgent orchestrator;
     private final QueryProperties properties;
 
     @PostMapping(ApiPaths.QUERY)

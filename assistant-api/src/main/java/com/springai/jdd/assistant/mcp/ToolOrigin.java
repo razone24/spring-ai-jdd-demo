@@ -1,4 +1,4 @@
-package com.springai.jdd.assistant.agent.trail;
+package com.springai.jdd.assistant.mcp;
 
 /**
  * Who decided to call a tool: the model, during its tool loop, or the harness around it

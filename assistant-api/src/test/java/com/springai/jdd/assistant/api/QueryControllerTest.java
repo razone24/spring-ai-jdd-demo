@@ -1,9 +1,9 @@
 package com.springai.jdd.assistant.api;
 
 import com.springai.jdd.assistant.agent.QueryOutcome;
-import com.springai.jdd.assistant.agent.QueryOrchestrator;
-import com.springai.jdd.assistant.agent.trail.ToolCall;
-import com.springai.jdd.assistant.agent.trail.ToolOrigin;
+import com.springai.jdd.assistant.agent.OrchestratorAgent;
+import com.springai.jdd.assistant.mcp.ToolCall;
+import com.springai.jdd.assistant.mcp.ToolOrigin;
 import com.springai.jdd.assistant.audit.cost.TokenUsage;
 import com.springai.jdd.assistant.configuration.CoreConfiguration;
 import org.junit.jupiter.api.Test;
@@ -52,7 +52,7 @@ class QueryControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private QueryOrchestrator orchestrator;
+    private OrchestratorAgent orchestrator;
 
     @Test
     void shouldAnswerWithTheFullResponseContract() throws Exception {

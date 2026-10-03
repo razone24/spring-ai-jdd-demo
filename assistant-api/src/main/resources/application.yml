@@ -58,22 +58,22 @@ spring:
               url: ${WEB_SEARCH_MCP_URL:http://localhost:8083}
 
 assistant:
-  query:
-    max-prompt-length: ${ASSISTANT_MAX_PROMPT_LENGTH:2000}
-  chat:
+  agent:
     system-prompt: classpath:prompts/system-prompt.txt
     today: ${ASSISTANT_TODAY:}
     max-tool-rounds: ${ASSISTANT_MAX_TOOL_ROUNDS:5}
+    memory-max-messages: ${ASSISTANT_MEMORY_MAX_MESSAGES:20}
+  query:
+    max-prompt-length: ${ASSISTANT_MAX_PROMPT_LENGTH:2000}
   cache:
     enabled: ${ASSISTANT_CACHE_ENABLED:true}
     hit-threshold: ${ASSISTANT_CACHE_HIT_THRESHOLD:0.9}
+    max-age: ${ASSISTANT_CACHE_MAX_AGE:24h}
     uncacheable-tools: searchWeb
   rate-limit:
     burst: ${ASSISTANT_RATE_LIMIT_BURST:30}
     per-second: ${ASSISTANT_RATE_LIMIT_PER_SECOND:2}
     max-clients: 10000
-  memory:
-    max-messages: ${ASSISTANT_MEMORY_MAX_MESSAGES:20}
   # USD per million tokens, keyed by the model id the provider reports back. A local model costs
   # nothing to call; it is priced at gpt-4.1-mini rates so the dashboard shows the cloud-equivalent spend.
   pricing:

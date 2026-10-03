@@ -1,7 +1,7 @@
 package com.springai.jdd.assistant.audit;
 
 import com.springai.jdd.assistant.agent.QueryOutcome;
-import com.springai.jdd.assistant.agent.trail.ToolCall;
+import com.springai.jdd.assistant.mcp.ToolCall;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

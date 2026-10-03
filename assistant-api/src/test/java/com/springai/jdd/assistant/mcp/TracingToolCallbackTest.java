@@ -1,7 +1,7 @@
-package com.springai.jdd.assistant.agent.tool;
+package com.springai.jdd.assistant.mcp;
 
-import com.springai.jdd.assistant.agent.trail.ToolOrigin;
-import com.springai.jdd.assistant.agent.trail.ToolTrail;
+import com.springai.jdd.assistant.mcp.ToolOrigin;
+import com.springai.jdd.assistant.mcp.ToolTrail;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.definition.ToolDefinition;
@@ -61,13 +61,16 @@ class TracingToolCallbackTest {
     }
 
     @Test
-    void shouldRecordAFailureAndHandItToTheToolLoopAsAToolError() {
+    void shouldRecordAFailureAndTellTheModelNotToGuess() {
         ToolCallback failing = traced(input -> {
-            throw new IllegalStateException("server down");
+            throw new IllegalStateException("wrapped", new java.net.ConnectException("Connection refused"));
         });
 
-        assertThatThrownBy(() -> failing.call(INPUT)).isInstanceOf(ToolExecutionException.class);
-        assertThat(trail.calls()).singleElement().satisfies(call -> assertThat(call.error()).isEqualTo("server down"));
+        assertThatThrownBy(() -> failing.call(INPUT)).isInstanceOf(ToolExecutionException.class)
+                                                     .hasMessageContaining("unavailable right now")
+                                                     .hasMessageContaining("Do not guess");
+        assertThat(trail.calls()).singleElement()
+                                 .satisfies(call -> assertThat(call.error()).isEqualTo("Connection refused"));
     }
 
     private ToolCallback traced(Function<String, String> behaviour) {

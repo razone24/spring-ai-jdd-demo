@@ -1,11 +1,15 @@
-package com.springai.jdd.assistant.agent.cache;
+package com.springai.jdd.assistant.harness;
 
-import com.springai.jdd.assistant.agent.tool.McpToolset;
-import com.springai.jdd.assistant.agent.trail.ToolCall;
-import com.springai.jdd.assistant.agent.trail.ToolTrail;
+import com.springai.jdd.assistant.mcp.McpToolset;
+import com.springai.jdd.assistant.mcp.ToolCall;
+import com.springai.jdd.assistant.mcp.ToolTrail;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.ObjectMapper;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.Set;
 
@@ -21,12 +25,18 @@ import static org.mockito.Mockito.when;
 class SemanticCacheTest {
 
     private static final String QUESTION = "What is the Wi-Fi password?";
+    private static final String NOW = "2026-10-21T09:00:00Z";
     private static final String MATCHES = """
-            [{"question":"wifi password?","answer":"Java4Ever!","score":0.86},
-             {"question":"What is the Wi-Fi password?","answer":"It is Java4Ever!","score":0.98}]""";
+            [{"question":"wifi password?","answer":"Java4Ever!","score":0.86,"timestamp":"2026-10-21T08:00:00Z"},
+             {"question":"What is the Wi-Fi password?","answer":"It is Java4Ever!","score":0.98,
+              "timestamp":"2026-10-21T08:30:00Z"}]""";
+    private static final String STALE_MATCH = """
+            [{"question":"What is the Wi-Fi password?","answer":"It was Java4Ever!","score":0.99,
+              "timestamp":"2026-10-19T08:30:00Z"}]""";
 
     private final McpToolset toolset = mock(McpToolset.class);
     private final ToolTrail trail = new ToolTrail();
+    private final Clock clock = Clock.fixed(Instant.parse(NOW), ZoneOffset.UTC);
 
     @Test
     void shouldServeTheClosestMatchAboveTheThreshold() {
@@ -44,6 +54,13 @@ class SemanticCacheTest {
         when(toolset.callAsHarness(eq(SemanticCache.SEARCH), anyMap(), any())).thenReturn(MATCHES);
 
         assertThat(cacheWithThreshold(0.99).lookup(QUESTION, trail)).isEmpty();
+    }
+
+    @Test
+    void shouldIgnoreAnAnswerOlderThanTheMaxAge() {
+        when(toolset.callAsHarness(eq(SemanticCache.SEARCH), anyMap(), any())).thenReturn(STALE_MATCH);
+
+        assertThat(cacheWithThreshold(0.9).lookup(QUESTION, trail)).isEmpty();
     }
 
     @Test
@@ -81,7 +98,7 @@ class SemanticCacheTest {
 
     @Test
     void shouldDoNothingWhenDisabled() {
-        SemanticCache disabled = new SemanticCache(toolset, new ObjectMapper(), new CacheProperties(false, 0.9, Set.of()));
+        SemanticCache disabled = new SemanticCache(toolset, new ObjectMapper(), new CacheProperties(false, 0.9, null, Set.of()), clock);
 
         assertThat(disabled.lookup(QUESTION, trail)).isEmpty();
         disabled.store(QUESTION, "answer", trail);
@@ -89,6 +106,7 @@ class SemanticCacheTest {
     }
 
     private SemanticCache cacheWithThreshold(double threshold) {
-        return new SemanticCache(toolset, new ObjectMapper(), new CacheProperties(true, threshold, Set.of("searchWeb")));
+        return new SemanticCache(toolset, new ObjectMapper(), new CacheProperties(true, threshold, Duration.ofHours(24),
+                                                                           Set.of("searchWeb")), clock);
     }
 }

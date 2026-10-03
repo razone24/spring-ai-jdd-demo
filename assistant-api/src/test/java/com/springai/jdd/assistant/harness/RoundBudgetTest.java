@@ -1,4 +1,4 @@
-package com.springai.jdd.assistant.agent.chat.loop;
+package com.springai.jdd.assistant.harness;
 
 import org.junit.jupiter.api.Test;
 

@@ -1,6 +1,6 @@
 package com.springai.jdd.assistant;
 
-import com.springai.jdd.assistant.agent.chat.ChatProperties;
+import com.springai.jdd.assistant.agent.AgentProperties;
 import com.springai.jdd.assistant.audit.cost.TokenPricing;
 import com.springai.jdd.assistant.audit.cost.TokenUsage;
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
 
 @SpringBootTest(webEnvironment = NONE)
-@TestPropertySource(properties = {WiringTest.NO_MODEL_PULL, "assistant.chat.today=" + WiringTest.PINNED_DATE})
+@TestPropertySource(properties = {WiringTest.NO_MODEL_PULL, "assistant.agent.today=" + WiringTest.PINNED_DATE})
 class WiringTest {
 
     static final String NO_MODEL_PULL = "spring.ai.ollama.init.pull-model-strategy=never";
@@ -32,7 +32,7 @@ class WiringTest {
     private ChatClient chatClient;
 
     @Autowired
-    private ChatProperties chatProperties;
+    private AgentProperties chatProperties;
 
     @Autowired
     private TokenPricing pricing;

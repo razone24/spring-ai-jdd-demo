@@ -1,98 +1,98 @@
 package com.springai.jdd.assistant.agent;
 
-import com.springai.jdd.assistant.agent.cache.CachedAnswer;
-import com.springai.jdd.assistant.agent.cache.SemanticCache;
-import com.springai.jdd.assistant.agent.chat.ChatAnswer;
-import com.springai.jdd.assistant.agent.chat.ChatService;
-import com.springai.jdd.assistant.agent.refusal.RefusalReason;
-import com.springai.jdd.assistant.agent.tool.ToolSession;
-import com.springai.jdd.assistant.agent.tool.ToolSessionFactory;
 import com.springai.jdd.assistant.audit.QueryAuditFactory;
 import com.springai.jdd.assistant.audit.QueryAuditor;
 import com.springai.jdd.assistant.audit.cost.TokenPricing;
-import com.springai.jdd.assistant.audit.cost.TokenUsage;
+import com.springai.jdd.assistant.harness.CachedAnswer;
+import com.springai.jdd.assistant.harness.SemanticCache;
+import com.springai.jdd.assistant.harness.ToolRoundLimitException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
-import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import static lombok.AccessLevel.PACKAGE;
-import static org.springframework.util.StringUtils.hasText;
 
 /**
- * One query, end to end. The harness owns the deterministic steps — semantic cache, budgets,
- * refusal resolution, memory and audit — and the model owns the decision of which tools to call.
+ * The orchestrator agent from the diagram. The harness runs the deterministic steps (1, 3, 4);
+ * the model makes the one decision that needs intelligence — which tools to call (2).
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor(access = PACKAGE)
-public class QueryOrchestrator {
+public class OrchestratorAgent {
 
-    static final String CACHE_MODEL = "semantic-cache";
+    static final String ROUND_LIMIT_MESSAGE = "I stopped after the number of lookups this assistant allows for one "
+                                              + "question without reaching an answer. Please ask a more specific question.";
 
-    private final ChatService chatService;
-    private final ToolSessionFactory sessions;
-    private final SemanticCache cache;
+    private final ChatClient chatClient;
+    private final AgentTurns turns;
+    private final SemanticCache semanticCache;
     private final ChatMemory chatMemory;
+    private final Today today;
+    private final TokenPricing pricing;
     private final QueryAuditor auditor;
     private final QueryAuditFactory auditFactory;
-    private final TokenPricing pricing;
     private final Clock clock;
 
-    public QueryOutcome answer(String prompt, String conversationId) {
-        String conversation = resolveConversationId(conversationId);
-        // A follow-up ("and where is it?") only makes sense in its conversation, so only opening
-        // questions are served from — and written to — the shared semantic cache.
-        boolean openingQuestion = chatMemory.get(conversation).isEmpty();
-        ToolSession session = sessions.open();
-        long startedAt = System.nanoTime();
-        Optional<CachedAnswer> cached = openingQuestion ? cache.lookup(prompt, session.trail()) : Optional.empty();
-        QueryOutcome.QueryOutcomeBuilder outcome = cached.map(hit -> answerFromCache(prompt, conversation, hit))
-                                                         .orElseGet(() -> answerWithModel(prompt, conversation,
-                                                                                          session, openingQuestion));
-        QueryOutcome result = outcome.calls(session.calls())
-                                     .conversationId(conversation)
-                                     .latencyMillis(Duration.ofNanos(System.nanoTime() - startedAt).toMillis())
-                                     .build();
-        QueryOutcome priced = result.toBuilder().costUsd(pricing.priceOf(result.usage())).build();
-        auditor.record(auditFactory.buildFrom(prompt, priced, clock.instant()));
-        return priced;
-    }
+    public QueryOutcome answer(String question, String conversationId) {
+        AgentTurn turn = turns.start(question, conversationId);
 
-    private QueryOutcome.QueryOutcomeBuilder answerFromCache(String prompt, String conversation, CachedAnswer hit) {
-        chatMemory.add(conversation, List.of(new UserMessage(prompt), new AssistantMessage(hit.answer())));
-        return QueryOutcome.builder()
-                           .message(hit.answer())
-                           .usage(TokenUsage.builder().model(CACHE_MODEL).build())
-                           .cacheHit(true);
-    }
-
-    private QueryOutcome.QueryOutcomeBuilder answerWithModel(String prompt,
-                                                             String conversation,
-                                                             ToolSession session,
-                                                             boolean openingQuestion) {
-        ChatAnswer answer = chatService.ask(prompt, conversation, session);
-        Optional<RefusalReason> refusal = session.refusalOf(answer.content());
-        String message = refusal.map(RefusalReason::getMessage).orElseGet(answer::content);
-        if (openingQuestion && refusal.isEmpty() && !answer.stoppedEarly() && hasText(message)) {
-            cache.store(prompt, message, session.trail());
+        // 1. Semantic cache: a question someone already asked is answered in milliseconds, without the LLM.
+        //    Only opening questions — a follow-up ("and where is it?") means nothing outside its conversation.
+        Optional<CachedAnswer> cached = turn.isOpeningQuestion()
+                                        ? semanticCache.lookup(question, turn.trail())
+                                        : Optional.empty();
+        if (cached.isPresent()) {
+            remember(turn, turn.acceptCachedAnswer(cached.get().answer()));
+            return audited(turn);
         }
-        return QueryOutcome.builder()
-                           .message(message)
-                           .usage(answer.usage())
-                           .toolRounds(answer.rounds())
-                           .groundingRetried(answer.groundingRetried())
-                           .refused(refusal.isPresent())
-                           .refusalReason(refusal.map(RefusalReason::name).orElse(null));
+
+        // 2. The model decides which MCP tools to call; the advisors keep it bounded and grounded.
+        String answer = turn.acceptModelAnswer(askModel(turn));
+
+        // 3. A good opening answer goes back into the cache for the next person who asks.
+        if (turn.isWorthCaching()) {
+            semanticCache.store(question, answer, turn.trail());
+        }
+
+        // 4. Every answer is priced and audited: logs, metrics and the database behind Grafana.
+        return audited(turn);
     }
 
-    private String resolveConversationId(String conversationId) {
-        return hasText(conversationId) ? conversationId : UUID.randomUUID().toString();
+    private String askModel(AgentTurn turn) {
+        try {
+            return chatClient.prompt()
+                             .system(system -> system.param("today", today.resolve()))
+                             .user(turn.question())
+                             .toolCallbacks(turn.tools())
+                             .advisors(advisor -> advisor.param(ChatMemory.CONVERSATION_ID, turn.conversationId())
+                                                         .param(AgentTurn.KEY, turn))
+                             .call()
+                             .content();
+        } catch (ToolRoundLimitException exception) {
+            log.warn("Stopped the tool loop: {}", exception.getMessage());
+            turn.markStoppedEarly();
+            return ROUND_LIMIT_MESSAGE;
+        }
+    }
+
+    /** The memory advisor never ran for a cache hit, so the exchange is remembered here. */
+    private void remember(AgentTurn turn, String answer) {
+        chatMemory.add(turn.conversationId(), List.of(new UserMessage(turn.question()), new AssistantMessage(answer)));
+    }
+
+    private QueryOutcome audited(AgentTurn turn) {
+        QueryOutcome outcome = turn.outcome();
+        QueryOutcome priced = outcome.toBuilder().costUsd(pricing.priceOf(outcome.usage())).build();
+        auditor.record(auditFactory.buildFrom(turn.question(), priced, clock.instant()));
+        return priced;
     }
 }

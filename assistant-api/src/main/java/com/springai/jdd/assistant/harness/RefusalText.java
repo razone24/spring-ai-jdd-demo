@@ -1,4 +1,4 @@
-package com.springai.jdd.assistant.agent.refusal;
+package com.springai.jdd.assistant.harness;
 
 import lombok.NoArgsConstructor;
 
@@ -16,7 +16,7 @@ import static org.springframework.util.StringUtils.hasText;
 @NoArgsConstructor(access = PRIVATE)
 final class RefusalText {
 
-    private static final Pattern WRITTEN_CALL = Pattern.compile(RefusalDescriptors.NAME + "\\s*\\(\\s*\"?(\\w+)\"?\\s*\\)");
+    private static final Pattern WRITTEN_CALL = Pattern.compile(RefusalTool.NAME + "\\s*\\(\\s*\"?(\\w+)\"?\\s*\\)");
     private static final int REASON = 1;
 
     static RefusalReason detect(String content) {

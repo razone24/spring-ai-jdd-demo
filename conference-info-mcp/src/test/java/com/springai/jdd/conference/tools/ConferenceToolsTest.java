@@ -27,7 +27,7 @@ class ConferenceToolsTest {
     void returnsTheAgendaAsPlainTextRatherThanAJsonString() {
         ToolCallback agenda = ToolCallbacks.from(schedule)[0];
 
-        assertThat(agenda.call("{}")).startsWith(ScheduleTools.HEADER).contains("\n── Day 1 · Tuesday 20 October ──");
+        assertThat(agenda.call("{}")).startsWith(Agenda.HEADER).contains("\n── Day 1 · Tuesday 20 October ──");
     }
 
     @Test

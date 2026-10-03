@@ -1,8 +1,8 @@
-package com.springai.jdd.assistant.agent.tool;
+package com.springai.jdd.assistant.mcp;
 
-import com.springai.jdd.assistant.agent.trail.ToolCall;
-import com.springai.jdd.assistant.agent.trail.ToolOrigin;
-import com.springai.jdd.assistant.agent.trail.ToolTrail;
+import com.springai.jdd.assistant.mcp.ToolCall;
+import com.springai.jdd.assistant.mcp.ToolOrigin;
+import com.springai.jdd.assistant.mcp.ToolTrail;
 import org.springframework.ai.chat.model.ToolContext;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.definition.ToolDefinition;
@@ -15,8 +15,13 @@ import java.time.Duration;
 /**
  * Decorates a tool so every call the model makes lands in the request's {@link ToolTrail}
  * with its server, arguments, result preview, duration and error — without the tool knowing.
+ * A failure reaches the model as a plain instruction rather than an exception class name, so it
+ * says the information is unavailable instead of guessing.
  */
 public final class TracingToolCallback implements ToolCallback {
+
+    static final String TOOL_FAILED = "The tool %s on server %s is unavailable right now (%s). Tell the user this "
+                                      + "information can't be looked up at the moment. Do not guess it.";
 
     private final ToolCallback delegate;
     private final String server;
@@ -54,10 +59,19 @@ public final class TracingToolCallback implements ToolCallback {
                                                      .build());
             return output;
         } catch (RuntimeException exception) {
-            trail.record(callOf(toolInput, startedAt).error(exception.getMessage()).build());
-            throw exception instanceof ToolExecutionException ? exception
-                                                              : new ToolExecutionException(getToolDefinition(), exception);
+            String reason = rootCauseOf(exception);
+            trail.record(callOf(toolInput, startedAt).error(reason).build());
+            throw new ToolExecutionException(getToolDefinition(), new IllegalStateException(
+                    TOOL_FAILED.formatted(getToolDefinition().name(), server, reason)));
         }
+    }
+
+    private static String rootCauseOf(Throwable exception) {
+        Throwable root = exception;
+        while (root.getCause() != null && root.getCause() != root) {
+            root = root.getCause();
+        }
+        return root.getMessage() == null ? root.getClass().getSimpleName() : root.getMessage();
     }
 
     private ToolCall.ToolCallBuilder callOf(String toolInput, long startedAt) {

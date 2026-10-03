@@ -74,6 +74,23 @@ final class Agenda {
                         null),
             new Session(2, "16:50", "17:00", "Room A", null, "Closing & raffle", null, null));
 
+    static final String HEADER = "JDD 2026 AGENDA (demo data) · Hotel Metropolo, Kraków";
+    private static final String[] DAY_NAMES = {"", "Day 1 · Tuesday 20 October", "Day 2 · Wednesday 21 October"};
+
     private Agenda() {
+    }
+
+    /** The sessions as text the model reads well: grouped under a heading per day. */
+    static String format(List<Session> sessions) {
+        StringBuilder agenda = new StringBuilder(HEADER);
+        int currentDay = 0;
+        for (Session session : sessions) {
+            if (session.day() != currentDay) {
+                currentDay = session.day();
+                agenda.append("\n\n── ").append(DAY_NAMES[currentDay]).append(" ──");
+            }
+            agenda.append('\n').append(session.format());
+        }
+        return agenda.toString();
     }
 }

@@ -1,6 +1,6 @@
 package com.springai.jdd.assistant.agent;
 
-import com.springai.jdd.assistant.agent.trail.ToolCall;
+import com.springai.jdd.assistant.mcp.ToolCall;
 import com.springai.jdd.assistant.audit.cost.TokenUsage;
 import lombok.Builder;
 

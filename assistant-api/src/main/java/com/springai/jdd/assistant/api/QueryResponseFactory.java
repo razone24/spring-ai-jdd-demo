@@ -1,7 +1,7 @@
 package com.springai.jdd.assistant.api;
 
 import com.springai.jdd.assistant.agent.QueryOutcome;
-import com.springai.jdd.assistant.agent.trail.ToolCall;
+import com.springai.jdd.assistant.mcp.ToolCall;
 import com.springai.jdd.assistant.api.dto.InterpretedToolCall;
 import com.springai.jdd.assistant.api.dto.QueryInterpretation;
 import com.springai.jdd.assistant.api.dto.QueryResponse;

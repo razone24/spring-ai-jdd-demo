@@ -1,47 +1,51 @@
-package com.springai.jdd.assistant.agent.chat.loop;
+package com.springai.jdd.assistant.harness;
 
+import com.springai.jdd.assistant.agent.AgentTurn;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClientRequest;
 import org.springframework.ai.chat.client.ChatClientResponse;
 import org.springframework.ai.chat.client.advisor.ToolCallingAdvisor;
 import org.springframework.ai.chat.client.advisor.api.CallAdvisor;
 import org.springframework.ai.chat.client.advisor.api.CallAdvisorChain;
-import org.springframework.ai.chat.messages.UserMessage;
+
+import java.util.Optional;
 
 /**
- * Grounding guard. A small model that sees its own earlier answers in the conversation memory is
- * tempted to answer a follow-up "from memory" — and to make up the parts it doesn't remember.
- * When a turn ends without the model having called a single tool, the draft is discarded and the
- * model is sent back once, told to look the facts up first. It sits inside the memory advisor, so
- * the discarded draft is never remembered, and outside the tool loop, so the retry gets a full loop.
+ * Grounding guard. A small model that sees its earlier answers in memory likes to answer a follow-up
+ * "from memory" and make up the parts it forgot. If a turn ends without a single tool call, the draft
+ * is thrown away and the model is sent back — once — to look the facts up.
+ * <p>
+ * Order matters: inside the memory advisor (the discarded draft is never remembered), outside the
+ * tool loop (the retry gets a full loop of its own).
  */
 @Slf4j
 public class GroundingAdvisor implements CallAdvisor {
 
-    public static final String GROUNDING_CHECK = "groundingCheck";
     static final String LOOK_IT_UP = """
 
-            (Assistant harness: your previous draft was discarded because it was not based on a tool \
-            result from this turn. Call the tool that holds these facts first, then answer from its result. \
-            If no tool can help, say so or call refuse.)""";
-    private static final String RETRYING = "Answer was not grounded in a tool result; asking the model to look it up";
+            (Assistant harness: your previous draft was discarded because it was not based on a tool result \
+            from this turn. Call the tool that holds these facts first, then answer from its result. If no tool \
+            can help, say so or call refuse.)""";
 
     @Override
     public ChatClientResponse adviseCall(ChatClientRequest request, CallAdvisorChain chain) {
-        ChatClientResponse response = chain.copy(this).nextCall(request);
-        if (!(request.context().get(GROUNDING_CHECK) instanceof GroundingCheck check) || check.modelUsedATool()) {
-            return response;
+        ChatClientResponse draft = chain.copy(this).nextCall(request);
+
+        Optional<AgentTurn> turn = AgentTurn.of(request.context());
+        if (turn.isEmpty() || turn.get().modelUsedATool()) {
+            return draft;
         }
-        log.info(RETRYING);
-        check.markRetried();
-        ChatClientRequest lookItUp = request.mutate()
-                                            .prompt(request.prompt().augmentUserMessage(this::withLookItUp))
-                                            .build();
-        return chain.copy(this).nextCall(lookItUp);
+        log.info("Answer was not grounded in a tool result; asking the model to look it up");
+        turn.get().markGroundingRetried();
+        return chain.copy(this).nextCall(withLookItUpNote(request));
     }
 
-    private UserMessage withLookItUp(UserMessage message) {
-        return message.mutate().text(message.getText() + LOOK_IT_UP).build();
+    private ChatClientRequest withLookItUpNote(ChatClientRequest request) {
+        return request.mutate()
+                      .prompt(request.prompt().augmentUserMessage(user -> user.mutate()
+                                                                              .text(user.getText() + LOOK_IT_UP)
+                                                                              .build()))
+                      .build();
     }
 
     @Override

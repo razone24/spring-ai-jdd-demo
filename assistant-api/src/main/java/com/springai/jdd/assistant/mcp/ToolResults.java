@@ -1,4 +1,4 @@
-package com.springai.jdd.assistant.agent.tool;
+package com.springai.jdd.assistant.mcp;
 
 import lombok.NoArgsConstructor;
 import tools.jackson.core.JacksonException;

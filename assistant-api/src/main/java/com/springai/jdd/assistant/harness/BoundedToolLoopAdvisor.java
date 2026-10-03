@@ -1,5 +1,6 @@
-package com.springai.jdd.assistant.agent.chat.loop;
+package com.springai.jdd.assistant.harness;
 
+import com.springai.jdd.assistant.agent.AgentTurn;
 import org.springframework.ai.chat.client.ChatClientRequest;
 import org.springframework.ai.chat.client.ChatClientResponse;
 import org.springframework.ai.chat.client.advisor.ToolCallingAdvisor;
@@ -7,35 +8,25 @@ import org.springframework.ai.chat.client.advisor.api.CallAdvisorChain;
 import org.springframework.ai.model.tool.ToolCallingManager;
 
 /**
- * Bounds the tool loop and tallies its token use. A model that keeps re-calling tools would
- * otherwise run until the request times out, spending money on every round.
+ * Spring AI's tool-calling loop with a budget: every model round spends one, and the turn stops when
+ * it runs out — a model that keeps calling tools would otherwise loop (and bill) until a timeout.
+ * Each round's token usage is tallied on the way out.
  */
-public class RoundBoundedToolAdvisor extends ToolCallingAdvisor {
+public class BoundedToolLoopAdvisor extends ToolCallingAdvisor {
 
-    public static final String ROUND_BUDGET = "roundBudget";
-    public static final String TOKEN_LEDGER = "tokenLedger";
-    private static final boolean CONVERSATION_HISTORY_ENABLED = true;
-
-    public RoundBoundedToolAdvisor(ToolCallingManager toolCallingManager) {
-        super(toolCallingManager,
-              DEFAULT_TOOL_EXECUTION_ELIGIBILITY_CHECKER,
-              DEFAULT_ORDER,
-              CONVERSATION_HISTORY_ENABLED);
+    public BoundedToolLoopAdvisor(ToolCallingManager toolCallingManager) {
+        super(toolCallingManager, DEFAULT_TOOL_EXECUTION_ELIGIBILITY_CHECKER, DEFAULT_ORDER, true);
     }
 
     @Override
     protected ChatClientRequest doBeforeCall(ChatClientRequest request, CallAdvisorChain chain) {
-        if (request.context().get(ROUND_BUDGET) instanceof RoundBudget budget) {
-            budget.spendRound();
-        }
+        AgentTurn.of(request.context()).ifPresent(AgentTurn::spendRound);
         return request;
     }
 
     @Override
     protected ChatClientResponse doAfterCall(ChatClientResponse response, CallAdvisorChain chain) {
-        if (response.context().get(TOKEN_LEDGER) instanceof TokenLedger ledger) {
-            ledger.add(response.chatResponse());
-        }
+        AgentTurn.of(response.context()).ifPresent(turn -> turn.countTokens(response.chatResponse()));
         return response;
     }
 }

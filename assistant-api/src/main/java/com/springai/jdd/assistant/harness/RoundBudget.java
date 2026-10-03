@@ -1,4 +1,4 @@
-package com.springai.jdd.assistant.agent.chat.loop;
+package com.springai.jdd.assistant.harness;
 
 import lombok.RequiredArgsConstructor;
 
@@ -10,7 +10,7 @@ public class RoundBudget {
     private final int maxRounds;
     private int rounds;
 
-    void spendRound() {
+    public void spendRound() {
         if (rounds >= maxRounds) {
             throw new ToolRoundLimitException(ROUND_LIMIT_REACHED.formatted(maxRounds));
         }

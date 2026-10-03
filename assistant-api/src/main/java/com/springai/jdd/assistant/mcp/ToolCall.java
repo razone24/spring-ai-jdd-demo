@@ -1,4 +1,4 @@
-package com.springai.jdd.assistant.agent.trail;
+package com.springai.jdd.assistant.mcp;
 
 import lombok.Builder;
 

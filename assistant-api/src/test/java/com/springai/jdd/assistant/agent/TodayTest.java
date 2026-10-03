@@ -1,4 +1,4 @@
-package com.springai.jdd.assistant.agent.chat;
+package com.springai.jdd.assistant.agent;
 
 import org.junit.jupiter.api.Test;
 
@@ -31,8 +31,8 @@ class TodayTest {
         assertThat(today.resolve()).isEqualTo(LocalDate.ofInstant(Instant.parse(SYSTEM_INSTANT), UTC));
     }
 
-    private ChatProperties propertiesFor(String today) {
-        return ChatProperties.builder()
+    private AgentProperties propertiesFor(String today) {
+        return AgentProperties.builder()
                              .today(today)
                              .build();
     }

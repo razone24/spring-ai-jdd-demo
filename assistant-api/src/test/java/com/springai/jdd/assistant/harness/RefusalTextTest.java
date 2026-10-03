@@ -1,4 +1,4 @@
-package com.springai.jdd.assistant.agent.refusal;
+package com.springai.jdd.assistant.harness;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -7,8 +7,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
 
-import static com.springai.jdd.assistant.agent.refusal.RefusalReason.OUT_OF_SCOPE;
-import static com.springai.jdd.assistant.agent.refusal.RefusalReason.UNINTELLIGIBLE;
+import static com.springai.jdd.assistant.harness.RefusalReason.OUT_OF_SCOPE;
+import static com.springai.jdd.assistant.harness.RefusalReason.UNINTELLIGIBLE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class RefusalTextTest {

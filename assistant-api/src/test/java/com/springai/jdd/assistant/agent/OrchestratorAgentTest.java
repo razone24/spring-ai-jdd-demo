@@ -1,18 +1,12 @@
 package com.springai.jdd.assistant.agent;
 
-import com.springai.jdd.assistant.agent.cache.CachedAnswer;
-import com.springai.jdd.assistant.agent.cache.SemanticCache;
-import com.springai.jdd.assistant.agent.chat.ChatProperties;
-import com.springai.jdd.assistant.agent.chat.ChatService;
-import com.springai.jdd.assistant.agent.chat.Today;
-import com.springai.jdd.assistant.agent.chat.loop.GroundingAdvisor;
-import com.springai.jdd.assistant.agent.chat.loop.RoundBoundedToolAdvisor;
-import com.springai.jdd.assistant.agent.tool.McpToolset;
-import com.springai.jdd.assistant.agent.tool.ToolSessionFactory;
-import com.springai.jdd.assistant.agent.tool.TracingToolCallback;
-import com.springai.jdd.assistant.agent.trail.ToolCall;
-import com.springai.jdd.assistant.agent.trail.ToolOrigin;
-import com.springai.jdd.assistant.agent.trail.ToolTrail;
+import com.springai.jdd.assistant.harness.CachedAnswer;
+import com.springai.jdd.assistant.harness.SemanticCache;
+import com.springai.jdd.assistant.mcp.McpToolset;
+import com.springai.jdd.assistant.mcp.TracingToolCallback;
+import com.springai.jdd.assistant.mcp.ToolCall;
+import com.springai.jdd.assistant.mcp.ToolOrigin;
+import com.springai.jdd.assistant.mcp.ToolTrail;
 import com.springai.jdd.assistant.audit.QueryAudit;
 import com.springai.jdd.assistant.audit.QueryAuditFactory;
 import com.springai.jdd.assistant.audit.QueryAuditor;
@@ -23,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import org.assertj.core.groups.Tuple;
 import org.mockito.ArgumentCaptor;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.InMemoryChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
@@ -48,21 +41,22 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
-import static com.springai.jdd.assistant.agent.chat.ChatService.ROUND_LIMIT_MESSAGE;
-import static com.springai.jdd.assistant.agent.refusal.RefusalReason.OUT_OF_SCOPE;
+import static com.springai.jdd.assistant.agent.OrchestratorAgent.ROUND_LIMIT_MESSAGE;
+import static com.springai.jdd.assistant.harness.RefusalReason.OUT_OF_SCOPE;
 import static java.time.ZoneOffset.UTC;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class QueryOrchestratorTest {
+class OrchestratorAgentTest {
 
     private static final String SCHEDULE_TOOL = "getConferenceSchedule";
     private static final String SCHEDULE_SERVER = "conference-info-mcp";
@@ -94,22 +88,23 @@ class QueryOrchestratorTest {
                                                                  .chatMemoryRepository(new InMemoryChatMemoryRepository())
                                                                  .maxMessages(20)
                                                                  .build();
-    private final ChatService chatService = new ChatService(chatClient(), new Today(clock, chatProperties()),
-                                                           chatProperties());
-    private final QueryOrchestrator orchestrator = new QueryOrchestrator(chatService,
-                                                                         new ToolSessionFactory(toolset, objectMapper),
-                                                                         cache,
-                                                                         chatMemory,
-                                                                         auditor,
-                                                                         new QueryAuditFactory(objectMapper),
-                                                                         pricing,
-                                                                         clock);
+    private final OrchestratorAgent orchestrator = new OrchestratorAgent(chatClient(),
+                                                                       new AgentTurns(toolset, chatMemory, properties()),
+                                                                       cache,
+                                                                       chatMemory,
+                                                                       new Today(clock, properties()),
+                                                                       pricing,
+                                                                       auditor,
+                                                                       new QueryAuditFactory(objectMapper),
+                                                                       clock);
 
     @BeforeEach
     void stubCollaborators() {
         when(chatModel.getOptions()).thenReturn(ToolCallingChatOptions.builder().build());
-        when(toolset.modelTools(any())).thenAnswer(invocation -> List.of(
+        when(toolset.toolsFor(any())).thenAnswer(invocation -> List.of(
                 new TracingToolCallback(scheduleTool(), SCHEDULE_SERVER, invocation.getArgument(0), objectMapper)));
+        when(toolset.traced(any(), any(), any())).thenAnswer(invocation -> new TracingToolCallback(
+                invocation.getArgument(0), invocation.getArgument(1), invocation.getArgument(2), objectMapper));
         when(cache.lookup(anyString(), any())).thenReturn(Optional.empty());
         when(pricing.priceOf(any())).thenReturn(new BigDecimal("0.0001"));
     }
@@ -151,6 +146,33 @@ class QueryOrchestratorTest {
         orchestrator.answer(PROMPT, CONVERSATION_ID);
 
         verify(cache).store(eq(PROMPT), eq(ANSWER), any(ToolTrail.class));
+    }
+
+    @Test
+    void shouldShowTheCacheWriteBackInTheAnswersTrace() {
+        stubALookupThenAnAnswer();
+        doAnswer(invocation -> {
+            invocation.<ToolTrail>getArgument(2).record(ToolCall.builder()
+                                                                 .name("recordChatHistory")
+                                                                 .origin(ToolOrigin.HARNESS)
+                                                                 .build());
+            return null;
+        }).when(cache).store(any(), any(), any());
+
+        QueryOutcome outcome = orchestrator.answer(PROMPT, CONVERSATION_ID);
+
+        assertThat(outcome.calls()).extracting(ToolCall::name).containsExactly(SCHEDULE_TOOL, "recordChatHistory");
+    }
+
+    @Test
+    void shouldNeverShowOrCacheAnEmptyAnswer() {
+        when(chatModel.call(any(Prompt.class))).thenReturn(toolCallResponse(SCHEDULE_TOOL, NO_ARGUMENTS),
+                                                          textResponse(""));
+
+        QueryOutcome outcome = orchestrator.answer(PROMPT, CONVERSATION_ID);
+
+        assertThat(outcome.message()).isEqualTo(AgentTurn.NO_ANSWER);
+        verify(cache, never()).store(any(), any(), any());
     }
 
     @Test
@@ -277,20 +299,21 @@ class QueryOrchestratorTest {
         return captor.getValue();
     }
 
+    /** Built by the real configuration, so the test runs the same advisor chain as the application. */
     private ChatClient chatClient() {
-        return ChatClient.builder(chatModel)
-                         .defaultSystem(new ClassPathResource(SYSTEM_PROMPT))
-                         .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build(),
-                                          new GroundingAdvisor(),
-                                          new RoundBoundedToolAdvisor(ToolCallingManager.builder().build()))
-                         .build();
+        return new AgentConfiguration().chatClient(ChatClient.builder(chatModel),
+                                                   chatMemory,
+                                                   ToolCallingManager.builder().build(),
+                                                   properties());
     }
 
-    private static ChatProperties chatProperties() {
-        return ChatProperties.builder()
-                             .today("")
-                             .maxToolRounds(MAX_TOOL_ROUNDS)
-                             .build();
+    private static AgentProperties properties() {
+        return AgentProperties.builder()
+                              .systemPrompt(new ClassPathResource(SYSTEM_PROMPT))
+                              .today("")
+                              .maxToolRounds(MAX_TOOL_ROUNDS)
+                              .memoryMaxMessages(20)
+                              .build();
     }
 
     private static ToolCallback scheduleTool() {

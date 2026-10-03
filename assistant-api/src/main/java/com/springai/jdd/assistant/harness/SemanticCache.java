@@ -1,13 +1,16 @@
-package com.springai.jdd.assistant.agent.cache;
+package com.springai.jdd.assistant.harness;
 
-import com.springai.jdd.assistant.agent.tool.McpToolset;
-import com.springai.jdd.assistant.agent.trail.ToolTrail;
+import com.springai.jdd.assistant.mcp.McpToolset;
+import com.springai.jdd.assistant.mcp.ToolTrail;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.Map;
 import java.util.Optional;
 
@@ -28,11 +31,13 @@ public class SemanticCache {
     private final McpToolset toolset;
     private final ObjectMapper objectMapper;
     private final CacheProperties properties;
+    private final Clock clock;
 
-    SemanticCache(McpToolset toolset, ObjectMapper objectMapper, CacheProperties properties) {
+    SemanticCache(McpToolset toolset, ObjectMapper objectMapper, CacheProperties properties, Clock clock) {
         this.toolset = toolset;
         this.objectMapper = objectMapper;
         this.properties = properties;
+        this.clock = clock;
     }
 
     public Optional<CachedAnswer> lookup(String question, ToolTrail trail) {
@@ -73,10 +78,22 @@ public class SemanticCache {
         CachedAnswer best = null;
         for (JsonNode match : matches) {
             double score = match.path("score").asDouble();
-            if (score >= properties.hitThreshold() && (best == null || score > best.score())) {
+            boolean fresh = isFresh(match.path("timestamp").asString());
+            if (fresh && score >= properties.hitThreshold() && (best == null || score > best.score())) {
                 best = new CachedAnswer(match.path("question").asString(), match.path("answer").asString(), score);
             }
         }
         return Optional.ofNullable(best);
+    }
+
+    private boolean isFresh(String timestamp) {
+        if (properties.maxAge() == null) {
+            return true;
+        }
+        try {
+            return Instant.parse(timestamp).isAfter(clock.instant().minus(properties.maxAge()));
+        } catch (DateTimeParseException exception) {
+            return false;
+        }
     }
 }
