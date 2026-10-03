@@ -79,7 +79,9 @@ With this fourth iteration, we shift from a proof-of-concept approach to somethi
 
 ## Slide 19 — Benefits & challenges
 
-We successfully addressed the main drawback of the previous iteration - partial responses and outdated data - by routing smarter and enriching context. The cost is response time: data has to travel through multiple components. The big modularity win is that we can add or extend a single tool without redeploying or impacting the rest of the system — but that demands an equally sophisticated infrastructure for continuous deployment and high availability. We also picked up additional fault tolerance via the web search tool: when other tools cannot answer, it kicks in. The trade-off is obvious from the diagram — the architecture is even more complex.
+Compared with the previous iteration, partial and outdated answers become much rarer. On a cache miss the agent goes to the live tools and combines them — schedule, wiki, web — and the harness only serves a cached answer above a strict similarity threshold and while it is still fresh. The modularity win is real: every capability is an MCP server, so we can add or swap one — or even swap the LLM — without touching the rest. And we get fault tolerance and visibility: web search as a fallback, graceful degradation when a server is down, and because every decision is now a tool call, we can finally trace it.
+
+The price? Every answer now takes several round trips to the LLM, and every round re-sends the tool definitions and results — so an uncached answer is slower and more expensive than before. The model is also non-deterministic: it can pick the wrong tool, guess a filter, or answer from memory. That is exactly why we wrap it in a harness — budgets, guardrails, a grounding check. And there are more moving parts to deploy, monitor and keep available: MCP servers, databases, observability. You'll see every one of these in the demo.
 
 ## Slide 20 — DEMO
 

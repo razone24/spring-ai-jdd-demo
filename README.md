@@ -89,12 +89,14 @@ Without the `persistence` profile, `assistant-api` runs with in-memory chat memo
 
 | Concern | Where |
 | --- | --- |
-| Semantic cache before and after the LLM (opening questions only; never refusals, web or failed-tool answers) | `agent/cache/SemanticCache`, `agent/QueryOrchestrator` |
-| Bounded tool loop + token tally | `agent/chat/loop/RoundBoundedToolAdvisor`, `RoundBudget`, `TokenLedger` |
-| Grounding guard: an answer with no tool call is sent back once | `agent/chat/loop/GroundingAdvisor` |
-| Refusal as a typed tool (`returnDirect`) + text fallback | `agent/refusal/*` |
-| Conversation memory (JDBC, windowed) | `agent/memory/MemoryConfiguration` |
-| MCP tool discovery, per-server tracing, re-discovery after a failure | `agent/tool/McpToolset`, `TracingToolCallback` |
+| The four steps of one answer: cache → model + MCP tools → cache write-back → audit | `agent/OrchestratorAgent` |
+| Agent = model + harness: system prompt, memory → grounding guard → bounded tool loop | `agent/AgentConfiguration` |
+| Per-question state the advisors share (tools, trail, rounds, tokens, guards) | `agent/AgentTurn` |
+| Semantic cache (opening questions only; 24 h max age; never refusals, empty, web or failed-tool answers) | `harness/SemanticCache` |
+| Bounded tool loop + token tally | `harness/BoundedToolLoopAdvisor` |
+| Grounding guard: an answer with no tool call is sent back once | `harness/GroundingAdvisor` |
+| Refusal as a typed tool (`returnDirect`) + text fallback | `harness/RefusalTool`, `RefusalText` |
+| MCP tool discovery per server, tracing, fail-fast connections, rejoin after a failure | `mcp/McpToolset`, `mcp/TracingToolCallback`, `mcp/McpClientConfiguration` |
 | Audit (log, Micrometer, Postgres) that never fails the request | `audit/*` |
 | Request id, rate limit per client, uniform error contract | `api/*` |
 

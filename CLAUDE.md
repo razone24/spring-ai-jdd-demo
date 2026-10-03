@@ -37,11 +37,19 @@ cd webapp && npm run build && npm run lint     # UI checks
   (`spring.ai.mcp.client.toolcallback.enabled: false`). `McpToolset` lists tools per `McpSyncClient`, tags each
   with its server name, wraps it in `TracingToolCallback`, and re-discovers tools after a failure. Clients
   initialise lazily (`initialized: false`), so the agent starts even if a server is down.
-- **Harness vs model.** `QueryOrchestrator` runs the deterministic steps: semantic-cache lookup and write-back
-  (opening questions only, via `McpToolset.callAsHarness`), audit and pricing. The model only chooses among the
-  tools in `ToolSession` (MCP tools except the `HARNESS_ONLY` cache tools, plus the local `refuse` tool).
-- **Advisor chain.** The order is `MessageChatMemoryAdvisor` → `GroundingAdvisor` → `RoundBoundedToolAdvisor`
-  (the tool loop). Per-request state travels as advisor params: `RoundBudget`, `TokenLedger`, `GroundingCheck`.
+- **Packages mirror the talk.** `agent` (the flow), `harness` (guardrails around the model), `mcp` (tools + trace),
+  plus `api` and `audit` plumbing.
+- **Harness vs model.** `OrchestratorAgent.answer()` is four steps: semantic-cache lookup, the model with its MCP
+  tools, cache write-back, then pricing and audit. Only step 2 is a model decision. The cache steps call the
+  `HARNESS_ONLY` tools through `McpToolset.callAsHarness`. `AgentTurns.start()` gives the model every other MCP
+  tool plus the local `refuse` tool.
+- **Advisor chain.** `AgentConfiguration` builds the `ChatClient` with `MessageChatMemoryAdvisor` →
+  `GroundingAdvisor` → `BoundedToolLoopAdvisor` (the tool loop). All per-question state lives in one `AgentTurn`,
+  passed as the `AgentTurn.KEY` advisor param and read with `AgentTurn.of(context)`.
+- **Failure behaviour.** MCP connections fail fast (2 s connect timeout, `McpClientConfiguration`). A failed tool
+  reaches the model as "unavailable, do not guess", and answers built from a failed tool are never cached. The
+  semantic cache also ignores entries older than `assistant.cache.max-age` (24 h). nginx re-resolves
+  `assistant-api` through Docker DNS, so recreating that container doesn't break the UI.
 - **LLM provider.** `spring.ai.model.chat` selects it (`ollama` by default, `openai` for any OpenAI-compatible
   API). Both starters are on the classpath. Embeddings in the MCP servers use the Ollama starter
   (`nomic-embed-text`, 768 dimensions).
@@ -56,8 +64,9 @@ cd webapp && npm run build && npm run lint     # UI checks
 
 ## Testing approach
 
-Unit tests only (JUnit 5, Mockito, AssertJ, MockMvc); no Testcontainers. `QueryOrchestratorTest` drives a real
-`ChatClient` with a mocked `ChatModel`, so advisors, memory and the tool loop run for real.
+Unit tests only (JUnit 5, Mockito, AssertJ, MockMvc); no Testcontainers. `OrchestratorAgentTest` drives a real
+`ChatClient`, built by `AgentConfiguration`, with a mocked `ChatModel`, so advisors, memory and the tool loop run for
+real.
 
 ## Conference presentation (`docs/`)
 
