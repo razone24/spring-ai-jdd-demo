@@ -1,0 +1,109 @@
+spring:
+  application:
+    name: assistant-api
+
+  # The default profile runs without a database (in-memory chat memory, no persisted audit);
+  # the `persistence` profile — used by docker compose — switches Postgres, Flyway and JDBC memory on.
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
+      - org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration
+      - org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration
+      - org.springframework.ai.model.chat.memory.repository.jdbc.autoconfigure.JdbcChatMemoryRepositoryAutoConfiguration
+
+  ai:
+    # Which chat model backs the agent: `ollama` (local, default) or `openai` (any OpenAI-compatible API).
+    model:
+      chat: ${LLM_PROVIDER:ollama}
+      embedding: none
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      chat:
+        model: ${OLLAMA_MODEL:qwen2.5:7b-instruct}
+        temperature: 0.0
+        # A fixed seed with temperature 0 makes a rehearsed question take the same path on stage.
+        seed: 42
+        # Ollama's default context window is small; tool definitions + the agenda need room.
+        num-ctx: ${OLLAMA_NUM_CTX:16384}
+        keep-alive: 30m
+      init:
+        pull-model-strategy: ${OLLAMA_PULL_MODEL_STRATEGY:when_missing}
+        timeout: 15m
+        embedding:
+          include: false
+    openai:
+      api-key: ${OPENAI_API_KEY:not-set}
+      base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
+      chat:
+        model: ${OPENAI_MODEL:gpt-4.1-mini}
+        temperature: 0.0
+    mcp:
+      client:
+        name: assistant-api
+        type: sync
+        # Clients connect lazily (see McpToolset) so the agent starts even if a server is still booting.
+        initialized: false
+        request-timeout: 30s
+        toolcallback:
+          enabled: false
+        streamable-http:
+          connections:
+            conference-info:
+              url: ${CONFERENCE_INFO_MCP_URL:http://localhost:8080}
+            rag-search:
+              url: ${RAG_SEARCH_MCP_URL:http://localhost:8081}
+            chat-history:
+              url: ${CHAT_HISTORY_MCP_URL:http://localhost:8082}
+            web-search:
+              url: ${WEB_SEARCH_MCP_URL:http://localhost:8083}
+
+assistant:
+  query:
+    max-prompt-length: ${ASSISTANT_MAX_PROMPT_LENGTH:2000}
+  chat:
+    system-prompt: classpath:prompts/system-prompt.txt
+    today: ${ASSISTANT_TODAY:}
+    max-tool-rounds: ${ASSISTANT_MAX_TOOL_ROUNDS:5}
+  cache:
+    enabled: ${ASSISTANT_CACHE_ENABLED:true}
+    hit-threshold: ${ASSISTANT_CACHE_HIT_THRESHOLD:0.9}
+    uncacheable-tools: searchWeb
+  rate-limit:
+    burst: ${ASSISTANT_RATE_LIMIT_BURST:30}
+    per-second: ${ASSISTANT_RATE_LIMIT_PER_SECOND:2}
+    max-clients: 10000
+  memory:
+    max-messages: ${ASSISTANT_MEMORY_MAX_MESSAGES:20}
+  # USD per million tokens, keyed by the model id the provider reports back. A local model costs
+  # nothing to call; it is priced at gpt-4.1-mini rates so the dashboard shows the cloud-equivalent spend.
+  pricing:
+    "[qwen2.5:7b-instruct]":
+      input-per-million: 0.40
+      output-per-million: 1.60
+    "[gpt-4.1-mini-2025-04-14]":
+      input-per-million: 0.40
+      output-per-million: 1.60
+    "[semantic-cache]":
+      input-per-million: 0
+      output-per-million: 0
+
+logging:
+  pattern:
+    level: "%5p [%X{requestId:-no-request}]"
+
+server:
+  port: ${SERVER_PORT:8090}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    distribution:
+      percentiles-histogram:
+        "[assistant.query.duration]": true
+        "[gen_ai.client.operation]": true
