@@ -26,12 +26,12 @@
   <g filter="url(#shadow)">
     <rect x="30" y="120" width="200" height="120" rx="14" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2.5"/>
   </g>
-  <text x="130" y="160" text-anchor="middle" font-size="20" font-weight="700" fill="#4c1d95">Microsoft Teams</text>
-  <text x="130" y="182" text-anchor="middle" font-size="14" fill="#7c3aed">User question</text>
-  <rect x="50" y="194" width="160" height="32" rx="6" fill="#fff" stroke="#c4b5fd" stroke-width="1.5"/>
-  <text x="130" y="214" text-anchor="middle" font-size="12" fill="#475569" font-style="italic">"rewards in feature X?"</text>
+  <text x="130" y="160" text-anchor="middle" font-size="20" font-weight="700" fill="#4c1d95">Conference app</text>
+  <text x="130" y="182" text-anchor="middle" font-size="14" fill="#7c3aed">Attendee question</text>
+  <rect x="40" y="194" width="180" height="32" rx="6" fill="#fff" stroke="#c4b5fd" stroke-width="1.5"/>
+  <text x="130" y="214" text-anchor="middle" font-size="12" fill="#475569" font-style="italic">"Talks on virtual threads?"</text>
 
-  <!-- ══════════════ Teams ↔ Gateway (big arrow) ══════════════ -->
+  <!-- ══════════════ App ↔ Gateway (big arrow) ══════════════ -->
   <path d="M230,180 L300,180" stroke="#475569" stroke-width="4" fill="none" marker-start="url(#big-arr-start)" marker-end="url(#big-arr)" stroke-linecap="round"/>
 
   <!-- ══════════════ GATEWAY ══════════════ -->
@@ -80,7 +80,7 @@
   <rect x="1185" y="160" width="110" height="6" rx="1" fill="#e2e8f0"/>
   <rect x="1185" y="172" width="110" height="6" rx="1" fill="#e2e8f0"/>
   <text x="1240" y="202" text-anchor="middle" font-size="18" font-weight="700" fill="#334155">Wiki pages</text>
-  <text x="1240" y="220" text-anchor="middle" font-size="12" fill="#64748b">source docs (Confluence)</text>
+  <text x="1240" y="220" text-anchor="middle" font-size="12" fill="#64748b">agenda · speakers · venue</text>
 
   <!-- Step 1 ↔ Wiki pages (straight horizontal, big arrow) -->
   <path d="M1020,180 L1150,180" stroke="#475569" stroke-width="4" fill="none" marker-start="url(#big-arr-start)" marker-end="url(#big-arr)" stroke-linecap="round"/>
