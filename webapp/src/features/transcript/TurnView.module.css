@@ -1,0 +1,15 @@
+.turn {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.response {
+  animation: rise var(--duration) var(--ease);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}

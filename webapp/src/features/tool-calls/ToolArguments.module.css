@@ -1,0 +1,31 @@
+.list {
+  margin: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 140px) minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: baseline;
+}
+
+.key {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-faint);
+  overflow-wrap: anywhere;
+}
+
+.value {
+  margin: 0;
+  font-size: var(--text-md);
+  overflow-wrap: anywhere;
+}
+
+.scalar {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
