@@ -1,0 +1,26 @@
+spring:
+  autoconfigure:
+    exclude:
+
+  datasource:
+    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5433/jdd}
+    username: ${POSTGRES_USER:jdd}
+    password: ${POSTGRES_PASSWORD:jdd}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+  flyway:
+    enabled: true
+    # The MCP servers keep their vector tables in the same database; Flyway owns only its own tables.
+    baseline-on-migrate: true
+    baseline-version: 0
+
+  ai:
+    chat:
+      memory:
+        repository:
+          jdbc:
+            initialize-schema: never

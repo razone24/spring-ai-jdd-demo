@@ -1,0 +1,21 @@
+.button {
+  border: none;
+  background: transparent;
+  color: var(--text-faint);
+  font-size: var(--text-xs);
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+
+.button:hover,
+.button:focus-visible {
+  color: var(--accent);
+}
+
+*:hover > .button,
+.button:focus-visible {
+  opacity: 1;
+}

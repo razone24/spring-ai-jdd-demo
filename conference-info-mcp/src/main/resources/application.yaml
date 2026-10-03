@@ -1,0 +1,20 @@
+server:
+  port: 8080
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 5s
+  application:
+    name: conference-info-mcp
+  ai:
+    mcp:
+      server:
+        name: conference-info-mcp
+        version: 1.0.0
+        # Stateless Streamable HTTP: no server-side session, so instances can restart or scale out freely.
+        protocol: STATELESS
+        instructions: Official JDD 2026 conference facts and agenda.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
