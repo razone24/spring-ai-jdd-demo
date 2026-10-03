@@ -1,0 +1,213 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 720" font-family="Inter, -apple-system, system-ui, sans-serif">
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="5" flood-opacity="0.1"/>
+    </filter>
+    <linearGradient id="grad-agent" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <!-- Big arrow markers -->
+    <marker id="big-arr" markerWidth="20" markerHeight="16" refX="19" refY="8" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L20,8 L0,16 Z" fill="#475569"/>
+    </marker>
+    <marker id="big-arr-start" markerWidth="20" markerHeight="16" refX="1" refY="8" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M20,0 L0,8 L20,16 Z" fill="#475569"/>
+    </marker>
+    <marker id="big-arr-blue" markerWidth="20" markerHeight="16" refX="19" refY="8" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L20,8 L0,16 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="big-arr-blue-start" markerWidth="20" markerHeight="16" refX="1" refY="8" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M20,0 L0,8 L20,16 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="big-arr-green" markerWidth="20" markerHeight="16" refX="19" refY="8" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L20,8 L0,16 Z" fill="#16a34a"/>
+    </marker>
+    <marker id="big-arr-green-start" markerWidth="20" markerHeight="16" refX="1" refY="8" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M20,0 L0,8 L20,16 Z" fill="#16a34a"/>
+    </marker>
+    <marker id="big-arr-pink" markerWidth="20" markerHeight="16" refX="19" refY="8" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L20,8 L0,16 Z" fill="#db2777"/>
+    </marker>
+    <marker id="big-arr-pink-start" markerWidth="20" markerHeight="16" refX="1" refY="8" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M20,0 L0,8 L20,16 Z" fill="#db2777"/>
+    </marker>
+    <marker id="big-arr-cyan" markerWidth="20" markerHeight="16" refX="19" refY="8" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L20,8 L0,16 Z" fill="#0891b2"/>
+    </marker>
+    <marker id="big-arr-orange" markerWidth="20" markerHeight="16" refX="19" refY="8" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L20,8 L0,16 Z" fill="#ea580c"/>
+    </marker>
+    <marker id="big-arr-slate" markerWidth="20" markerHeight="16" refX="19" refY="8" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L20,8 L0,16 Z" fill="#64748b"/>
+    </marker>
+    <marker id="big-arr-slate-start" markerWidth="20" markerHeight="16" refX="1" refY="8" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M20,0 L0,8 L20,16 Z" fill="#64748b"/>
+    </marker>
+    <!-- MCP-styled marker (purple) -->
+    <marker id="big-arr-mcp" markerWidth="20" markerHeight="16" refX="19" refY="8" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L20,8 L0,16 Z" fill="#7c3aed"/>
+    </marker>
+  </defs>
+
+  <!-- ══════════════ APPLICATION ══════════════ -->
+  <g filter="url(#shadow)">
+    <rect x="30" y="320" width="200" height="120" rx="14" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2.5"/>
+  </g>
+  <text x="130" y="365" text-anchor="middle" font-size="20" font-weight="700" fill="#4c1d95">Application</text>
+  <text x="130" y="390" text-anchor="middle" font-size="14" fill="#7c3aed">Web UI · chat</text>
+  <rect x="50" y="402" width="160" height="30" rx="6" fill="#fff" stroke="#c4b5fd" stroke-width="1.5"/>
+  <text x="130" y="422" text-anchor="middle" font-size="12" fill="#475569" font-style="italic">"Wi-Fi password?"</text>
+
+  <!-- Application ↔ Gateway -->
+  <path d="M230,380 L300,380" stroke="#475569" stroke-width="4" fill="none" marker-start="url(#big-arr-start)" marker-end="url(#big-arr)" stroke-linecap="round"/>
+
+  <!-- ══════════════ GATEWAY ══════════════ -->
+  <g filter="url(#shadow)">
+    <rect x="300" y="340" width="120" height="80" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2.5"/>
+  </g>
+  <polygon points="360,357 388,372 388,388 360,403 332,388 332,372" fill="none" stroke="#ea580c" stroke-width="2.5"/>
+  <text x="360" y="384" text-anchor="middle" font-size="13" font-weight="700" fill="#9a3412">API</text>
+  <text x="360" y="438" text-anchor="middle" font-size="16" font-weight="700" fill="#9a3412">Gateway</text>
+
+  <!-- Gateway ↔ Agent -->
+  <path d="M420,380 L490,380" stroke="#475569" stroke-width="4" fill="none" marker-start="url(#big-arr-start)" marker-end="url(#big-arr)" stroke-linecap="round"/>
+
+  <!-- ══════════════ ORCHESTRATOR AGENT (model + harness) ══════════════ -->
+  <g filter="url(#shadow)">
+    <rect x="490" y="295" width="240" height="170" rx="16" fill="url(#grad-agent)" stroke="#1e3a8a" stroke-width="2.5"/>
+  </g>
+  <circle cx="538" cy="350" r="26" fill="rgba(255,255,255,0.18)"/>
+  <text x="538" y="360" text-anchor="middle" font-size="22" font-weight="800" fill="#fff">A</text>
+  <text x="645" y="343" text-anchor="middle" font-size="20" font-weight="700" fill="#fff">Orchestrator</text>
+  <text x="645" y="367" text-anchor="middle" font-size="20" font-weight="700" fill="#fff">Agent</text>
+  <text x="610" y="400" text-anchor="middle" font-size="12" fill="#dbeafe">plans · decides · synthesizes</text>
+  <rect x="510" y="414" width="200" height="36" rx="8" fill="rgba(255,255,255,0.14)" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
+  <text x="610" y="429" text-anchor="middle" font-size="10" font-weight="700" fill="#fff" letter-spacing="0.12em">HARNESS</text>
+  <text x="610" y="443" text-anchor="middle" font-size="10.5" fill="#dbeafe">memory · guardrails · budgets · audit</text>
+
+  <!-- ══════════════ LLM ══════════════ -->
+  <g filter="url(#shadow)">
+    <rect x="530" y="80" width="160" height="100" rx="14" fill="#f0fdfa" stroke="#0d9488" stroke-width="2.5"/>
+  </g>
+  <text x="610" y="120" text-anchor="middle" font-size="22" font-weight="700" fill="#134e4a">LLM</text>
+  <text x="610" y="148" text-anchor="middle" font-size="14" fill="#0f766e">local or hosted</text>
+  <text x="610" y="167" text-anchor="middle" font-size="12" fill="#94a3b8">reasoning core</text>
+
+  <!-- Agent ↔ LLM -->
+  <path d="M610,295 L610,180" stroke="#2563eb" stroke-width="4" fill="none" marker-start="url(#big-arr-blue-start)" marker-end="url(#big-arr-blue)" stroke-linecap="round"/>
+  <text x="625" y="242" font-size="13" fill="#2563eb" font-style="italic">reason</text>
+
+  <!-- ══════════════ DB (memory & audit) ══════════════ -->
+  <g filter="url(#shadow)">
+    <path d="M 540,555 L 540,625 A 70,18 0 0 0 680,625 L 680,555" fill="#f8fafc" stroke="#64748b" stroke-width="2.5"/>
+    <ellipse cx="610" cy="555" rx="70" ry="18" fill="#f8fafc" stroke="#64748b" stroke-width="2.5"/>
+  </g>
+  <text x="610" y="595" text-anchor="middle" font-size="15" font-weight="700" fill="#334155">DB</text>
+  <text x="610" y="618" text-anchor="middle" font-size="15" font-weight="700" fill="#334155">memory · audit</text>
+
+  <!-- Agent ↔ DB -->
+  <path d="M610,465 L610,537" stroke="#64748b" stroke-width="3.2" fill="none" marker-start="url(#big-arr-slate-start)" marker-end="url(#big-arr-slate)" stroke-linecap="round"/>
+
+  <!-- ══════════════ GRAFANA (observability) ══════════════ -->
+  <g filter="url(#shadow)">
+    <rect x="270" y="545" width="180" height="100" rx="14" fill="#fff7ed" stroke="#f97316" stroke-width="2.5"/>
+  </g>
+  <rect x="290" y="567" width="10" height="24" rx="2" fill="#fdba74"/>
+  <rect x="304" y="559" width="10" height="32" rx="2" fill="#fb923c"/>
+  <rect x="318" y="573" width="10" height="18" rx="2" fill="#f97316"/>
+  <text x="385" y="585" text-anchor="middle" font-size="20" font-weight="700" fill="#9a3412">Grafana</text>
+  <text x="360" y="614" text-anchor="middle" font-size="12" fill="#475569">tokens · cost · latency</text>
+  <text x="360" y="632" text-anchor="middle" font-size="12" fill="#475569">cache hits · tool calls</text>
+
+  <!-- Agent → Grafana (metrics) -->
+  <path d="M490,445 L400,445 L400,545" stroke="#ea580c" stroke-width="3" fill="none" stroke-dasharray="7 5" marker-end="url(#big-arr-orange)" stroke-linecap="round"/>
+  <text x="440" y="490" text-anchor="middle" font-size="13" font-weight="700" fill="#ea580c" font-style="italic">metrics</text>
+  <!-- DB → Grafana (audit) -->
+  <path d="M540,600 L450,600" stroke="#ea580c" stroke-width="3" fill="none" stroke-dasharray="7 5" marker-end="url(#big-arr-orange)" stroke-linecap="round"/>
+  <text x="495" y="590" text-anchor="middle" font-size="13" font-weight="700" fill="#ea580c" font-style="italic">audit</text>
+
+  <!-- ══════════════ MCP SERVERS CONTAINER ══════════════ -->
+  <g>
+    <rect x="860" y="90" width="525" height="560" rx="20" fill="rgba(124, 58, 237, 0.03)" stroke="#7c3aed" stroke-width="2.5" stroke-dasharray="10 6"/>
+    <rect x="1000" y="76" width="280" height="32" rx="8" fill="#fff" stroke="#7c3aed" stroke-width="2"/>
+    <text x="1140" y="98" text-anchor="middle" font-size="15" font-weight="800" fill="#7c3aed" letter-spacing="0.08em">MCP SERVERS</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="900" y="120" width="220" height="100" rx="14" fill="#fff" stroke="#7c3aed" stroke-width="2.5"/>
+  </g>
+  <rect x="900" y="120" width="8" height="100" fill="#7c3aed" rx="3"/>
+  <text x="1015" y="154" text-anchor="middle" font-size="18" font-weight="700" fill="#4c1d95">Conference info</text>
+  <text x="1015" y="180" text-anchor="middle" font-size="12" fill="#475569">Event facts &amp; agenda</text>
+  <text x="1015" y="198" text-anchor="middle" font-size="12" fill="#475569">as callable tools</text>
+
+  <g filter="url(#shadow)">
+    <rect x="900" y="255" width="220" height="100" rx="14" fill="#fff" stroke="#16a34a" stroke-width="2.5"/>
+  </g>
+  <rect x="900" y="255" width="8" height="100" fill="#16a34a" rx="3"/>
+  <text x="1015" y="289" text-anchor="middle" font-size="18" font-weight="700" fill="#14532d">RAG search</text>
+  <text x="1015" y="315" text-anchor="middle" font-size="12" fill="#475569">Vector search over</text>
+  <text x="1015" y="333" text-anchor="middle" font-size="12" fill="#475569">knowledge base docs</text>
+
+  <g filter="url(#shadow)">
+    <rect x="900" y="390" width="220" height="100" rx="14" fill="#fff" stroke="#db2777" stroke-width="2.5"/>
+  </g>
+  <rect x="900" y="390" width="8" height="100" fill="#db2777" rx="3"/>
+  <text x="1015" y="424" text-anchor="middle" font-size="18" font-weight="700" fill="#9d174d">Chat history</text>
+  <text x="1015" y="450" text-anchor="middle" font-size="12" fill="#475569">Semantic cache of past</text>
+  <text x="1015" y="468" text-anchor="middle" font-size="12" fill="#475569">question + answer pairs</text>
+
+  <g filter="url(#shadow)">
+    <rect x="900" y="525" width="220" height="100" rx="14" fill="#fff" stroke="#0891b2" stroke-width="2.5"/>
+  </g>
+  <rect x="900" y="525" width="8" height="100" fill="#0891b2" rx="3"/>
+  <text x="1015" y="559" text-anchor="middle" font-size="18" font-weight="700" fill="#155e75">Web search</text>
+  <text x="1015" y="585" text-anchor="middle" font-size="12" fill="#475569">Fallback for unindexed</text>
+  <text x="1015" y="603" text-anchor="middle" font-size="12" fill="#475569">or fresh information</text>
+
+  <!-- ══════════════ Agent → MCP servers (one MCP trunk) ══════════════ -->
+  <path d="M730,380 L800,380" stroke="#7c3aed" stroke-width="3.2" fill="none" stroke-dasharray="9 5" stroke-linecap="round"/>
+  <path d="M800,170 L800,575" stroke="#7c3aed" stroke-width="3.2" fill="none" stroke-dasharray="9 5" stroke-linecap="round"/>
+  <path d="M800,170 L900,170" stroke="#7c3aed" stroke-width="3.2" fill="none" stroke-dasharray="9 5" marker-end="url(#big-arr-mcp)" stroke-linecap="round"/>
+  <path d="M800,305 L900,305" stroke="#7c3aed" stroke-width="3.2" fill="none" stroke-dasharray="9 5" marker-end="url(#big-arr-mcp)" stroke-linecap="round"/>
+  <path d="M800,440 L900,440" stroke="#7c3aed" stroke-width="3.2" fill="none" stroke-dasharray="9 5" marker-end="url(#big-arr-mcp)" stroke-linecap="round"/>
+  <path d="M800,575 L900,575" stroke="#7c3aed" stroke-width="3.2" fill="none" stroke-dasharray="9 5" marker-end="url(#big-arr-mcp)" stroke-linecap="round"/>
+  <rect x="744" y="352" width="44" height="22" rx="5" fill="#fff"/>
+  <text x="766" y="368" text-anchor="middle" font-size="13" font-weight="700" fill="#7c3aed" letter-spacing="0.05em">MCP</text>
+
+  <!-- ══════════════ Backing stores ══════════════ -->
+  <!-- Conference info → static data -->
+  <g filter="url(#shadow)">
+    <rect x="1225" y="135" width="130" height="70" rx="10" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2.5"/>
+  </g>
+  <text x="1290" y="167" text-anchor="middle" font-size="15" font-weight="700" fill="#4c1d95">Static</text>
+  <text x="1290" y="188" text-anchor="middle" font-size="15" font-weight="700" fill="#4c1d95">data</text>
+  <path d="M1120,170 L1225,170" stroke="#7c3aed" stroke-width="3.2" fill="none" marker-end="url(#big-arr-mcp)" stroke-linecap="round"/>
+
+  <g filter="url(#shadow)">
+    <path d="M 1220,270 L 1220,340 A 70,18 0 0 0 1360,340 L 1360,270" fill="#f0fdf4" stroke="#16a34a" stroke-width="2.5"/>
+    <ellipse cx="1290" cy="270" rx="70" ry="18" fill="#f0fdf4" stroke="#16a34a" stroke-width="2.5"/>
+  </g>
+  <text x="1290" y="310" text-anchor="middle" font-size="15" font-weight="700" fill="#14532d">Wiki</text>
+  <text x="1290" y="333" text-anchor="middle" font-size="15" font-weight="700" fill="#14532d">Vector DB</text>
+
+  <path d="M1120,305 L1220,305" stroke="#16a34a" stroke-width="3.2" fill="none" marker-start="url(#big-arr-green-start)" marker-end="url(#big-arr-green)" stroke-linecap="round"/>
+
+  <g filter="url(#shadow)">
+    <path d="M 1220,405 L 1220,475 A 70,18 0 0 0 1360,475 L 1360,405" fill="#fdf2f8" stroke="#db2777" stroke-width="2.5"/>
+    <ellipse cx="1290" cy="405" rx="70" ry="18" fill="#fdf2f8" stroke="#db2777" stroke-width="2.5"/>
+  </g>
+  <text x="1290" y="445" text-anchor="middle" font-size="15" font-weight="700" fill="#9d174d">Chat History</text>
+  <text x="1290" y="468" text-anchor="middle" font-size="15" font-weight="700" fill="#9d174d">Vector DB</text>
+
+  <path d="M1120,440 L1220,440" stroke="#db2777" stroke-width="3.2" fill="none" marker-start="url(#big-arr-pink-start)" marker-end="url(#big-arr-pink)" stroke-linecap="round"/>
+
+  <g filter="url(#shadow)">
+    <rect x="1220" y="525" width="140" height="100" rx="14" fill="#ecfeff" stroke="#0891b2" stroke-width="2.5"/>
+  </g>
+  <text x="1290" y="565" text-anchor="middle" font-size="18" font-weight="700" fill="#155e75">Web API</text>
+  <text x="1290" y="591" text-anchor="middle" font-size="13" fill="#0e7490">search provider</text>
+  <text x="1290" y="609" text-anchor="middle" font-size="11" fill="#94a3b8">external</text>
+  <path d="M1120,575 L1220,575" stroke="#0891b2" stroke-width="3.2" fill="none" marker-end="url(#big-arr-cyan)" stroke-linecap="round"/>
+</svg>
