@@ -1,7 +1,9 @@
 package com.springai.jdd.websearch;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -23,14 +25,12 @@ public class TavilyClient {
     }
 
     public List<SearchResult> search(String query, int maxResults) {
-        TavilyRequest request = new TavilyRequest(
-                props.getApiKey(), query, maxResults, "basic", false);
+        HttpEntity<TavilyRequest> request = new HttpEntity<>(new TavilyRequest(query, maxResults, "basic", false),
+                                                             headers());
         for (int attempt = 0; attempt <= 1; attempt++) {
             try {
-                TavilyResponse response = restTemplate.postForObject(
-                        props.getBaseUrl() + "/search",
-                        request,
-                        TavilyResponse.class);
+                TavilyResponse response = restTemplate.postForObject(props.getBaseUrl() + "/search", request,
+                                                                     TavilyResponse.class);
                 if (response == null || response.results() == null) {
                     return List.of();
                 }
@@ -38,16 +38,23 @@ public class TavilyClient {
                         .map(r -> new SearchResult(r.title(), r.url(), r.content(), r.score()))
                         .toList();
             } catch (HttpServerErrorException e) {
-                if (attempt == 1)
+                if (attempt == 1) {
                     throw e;
+                }
             }
         }
         return List.of();
     }
+
+    private HttpHeaders headers() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(props.getApiKey());
+        return headers;
+    }
 }
 
 record TavilyRequest(
-        @JsonProperty("api_key") String apiKey,
         String query,
         @JsonProperty("max_results") int maxResults,
         @JsonProperty("search_depth") String searchDepth,

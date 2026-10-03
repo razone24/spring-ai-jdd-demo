@@ -43,6 +43,10 @@ class TavilyClientTest {
                 """;
         mockServer.expect(once(), requestTo("https://api.tavily.com/search"))
                 .andExpect(method(HttpMethod.POST))
+                .andExpect(header("Authorization", "Bearer test-key"))
+                .andExpect(jsonPath("$.query").value("java conference"))
+                .andExpect(jsonPath("$.max_results").value(3))
+                .andExpect(jsonPath("$.api_key").doesNotExist())
                 .andRespond(withSuccess(json, MediaType.APPLICATION_JSON));
 
         List<SearchResult> results = client.search("java conference", 3);
