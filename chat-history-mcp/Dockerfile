@@ -3,12 +3,14 @@ FROM eclipse-temurin:25-jdk AS build
 WORKDIR /workspace
 COPY .mvn/ .mvn/
 COPY mvnw pom.xml ./
+COPY llm-provider-check/pom.xml llm-provider-check/
 COPY conference-info-mcp/pom.xml conference-info-mcp/
 COPY rag-search-mcp/pom.xml rag-search-mcp/
 COPY chat-history-mcp/pom.xml chat-history-mcp/
 COPY web-search-mcp/pom.xml web-search-mcp/
 COPY assistant-api/pom.xml assistant-api/
 RUN --mount=type=cache,target=/root/.m2 ./mvnw -B -q -pl chat-history-mcp -am dependency:go-offline
+COPY llm-provider-check/src/ llm-provider-check/src/
 COPY chat-history-mcp/src/ chat-history-mcp/src/
 RUN --mount=type=cache,target=/root/.m2 ./mvnw -B -q -pl chat-history-mcp -am package -DskipTests
 

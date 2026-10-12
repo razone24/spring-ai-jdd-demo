@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.io.Resource;
@@ -23,8 +24,8 @@ import java.util.Set;
 
 /**
  * Embeds the wiki at startup, one chunk per Markdown section. Chunk ids are derived from the file
- * content, so an unchanged file is never re-embedded and an edited file replaces its old chunks
- * instead of living next to them.
+ * content and the embedding model, so an unchanged file is never re-embedded, an edited file replaces
+ * its old chunks instead of living next to them, and switching the embedding model rebuilds them.
  */
 @Component
 public class WikiIngestor implements ApplicationRunner {
@@ -37,11 +38,14 @@ public class WikiIngestor implements ApplicationRunner {
     private final VectorStore vectorStore;
     private final ResourcePatternResolver resourceResolver;
     private final ChunkIndex chunkIndex;
+    private final String embeddingModel;
 
-    public WikiIngestor(VectorStore vectorStore, ResourcePatternResolver resourceResolver, ChunkIndex chunkIndex) {
+    public WikiIngestor(VectorStore vectorStore, ResourcePatternResolver resourceResolver, ChunkIndex chunkIndex,
+                        @Value("${llm.embedding-model}") String embeddingModel) {
         this.vectorStore = vectorStore;
         this.resourceResolver = resourceResolver;
         this.chunkIndex = chunkIndex;
+        this.embeddingModel = embeddingModel;
     }
 
     @Override
@@ -76,6 +80,7 @@ public class WikiIngestor implements ApplicationRunner {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             digest.update(CHUNKING_VERSION.getBytes(StandardCharsets.UTF_8));
+            digest.update(embeddingModel.getBytes(StandardCharsets.UTF_8));
             byte[] hash = digest.digest(bytes);
             return HexFormat.of().formatHex(hash).substring(0, 16);
         } catch (NoSuchAlgorithmException e) {

@@ -12,10 +12,16 @@ spring:
       - org.springframework.ai.model.chat.memory.repository.jdbc.autoconfigure.JdbcChatMemoryRepositoryAutoConfiguration
 
   ai:
-    # Which chat model backs the agent: `ollama` (local, default) or `openai` (any OpenAI-compatible API).
+    # Which chat model backs the agent: LLM_PROVIDER=openai (default) or ollama (local). The MCP servers'
+    # embeddings follow the same switch; llm-provider-check fails startup clearly if the provider isn't usable.
     model:
-      chat: ${LLM_PROVIDER:ollama}
+      chat: ${llm.provider:openai}
       embedding: none
+      image: none
+      audio:
+        speech: none
+        transcription: none
+      moderation: none
     ollama:
       base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
       chat:
@@ -32,10 +38,10 @@ spring:
         embedding:
           include: false
     openai:
-      api-key: ${OPENAI_API_KEY:not-set}
+      api-key: ${OPENAI_API_KEY:}
       base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
       chat:
-        model: ${OPENAI_MODEL:gpt-4.1-mini}
+        model: ${OPENAI_MODEL:gpt-4o-mini}
         temperature: 0.0
     mcp:
       client:
@@ -67,19 +73,26 @@ assistant:
     max-prompt-length: ${ASSISTANT_MAX_PROMPT_LENGTH:2000}
   cache:
     enabled: ${ASSISTANT_CACHE_ENABLED:true}
-    hit-threshold: ${ASSISTANT_CACHE_HIT_THRESHOLD:0.9}
+    hit-threshold: ${ASSISTANT_CACHE_HIT_THRESHOLD:${assistant.cache-hit-thresholds.${llm.provider:openai}}}
     max-age: ${ASSISTANT_CACHE_MAX_AGE:24h}
     uncacheable-tools: searchWeb
+  # Similarity scores differ per embedding model, so the default cache-hit bar does too.
+  cache-hit-thresholds:
+    openai: 0.8
+    ollama: 0.9
   rate-limit:
     burst: ${ASSISTANT_RATE_LIMIT_BURST:30}
     per-second: ${ASSISTANT_RATE_LIMIT_PER_SECOND:2}
     max-clients: 10000
   # USD per million tokens, keyed by the model id the provider reports back. A local model costs
-  # nothing to call; it is priced at gpt-4.1-mini rates so the dashboard shows the cloud-equivalent spend.
+  # nothing to call; it is priced at gpt-4o-mini rates so the dashboard shows the cloud-equivalent spend.
   pricing:
     "[qwen2.5:7b-instruct]":
-      input-per-million: 0.40
-      output-per-million: 1.60
+      input-per-million: 0.15
+      output-per-million: 0.60
+    "[gpt-4o-mini-2024-07-18]":
+      input-per-million: 0.15
+      output-per-million: 0.60
     "[gpt-4.1-mini-2025-04-14]":
       input-per-million: 0.40
       output-per-million: 1.60

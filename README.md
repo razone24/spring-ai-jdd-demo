@@ -3,11 +3,11 @@
 Live demo for **"The Future of Software Architecture in the Age of AI"**, JDD 2026, Kraków.
 
 The project is a conference assistant built on Spring AI 2. It is an agent with a production-style harness, running
-on a **local LLM (Ollama)**. It reaches its tools through **four MCP servers** and is observable end to end in
-**Grafana**.
+on **OpenAI (gpt-4o-mini)** by default or a **local LLM (Ollama)** with one switch. It reaches its tools through
+**four MCP servers** and is observable end to end in **Grafana**.
 
 ```
- Web UI ──► nginx ──► assistant-api ──── LLM (Ollama · qwen2.5:7b-instruct)
+ Web UI ──► nginx ──► assistant-api ──── LLM (OpenAI · gpt-4o-mini  |  Ollama · qwen2.5:7b-instruct)
  (React)             (Spring AI agent)
                        │  harness: semantic cache · memory · grounding guard · round budget ·
                        │           refusal tool · rate limit · audit · metrics
@@ -25,6 +25,7 @@ on a **local LLM (Ollama)**. It reaches its tools through **four MCP servers** a
 | Module | Port | What it is |
 | --- | --- | --- |
 | `assistant-api` | 8090 | Spring AI agent: MCP client, harness, `POST /query` |
+| `llm-provider-check` | – | Shared jar: stops startup with a clear message when the selected LLM provider isn't usable |
 | `conference-info-mcp` | 8080 | MCP tools `getConferenceOverview`, `getConferenceSchedule(day, room, track, keyword)` |
 | `rag-search-mcp` | 8081 | MCP tool `searchKnowledgeBase`: hybrid retrieval (pgvector + Postgres full-text, rank fusion) over `src/main/resources/wiki/*.md`, embedded at startup one chunk per section |
 | `chat-history-mcp` | 8082 | MCP tools `searchChatHistory`, `recordChatHistory` (semantic cache) |
@@ -37,12 +38,10 @@ All MCP servers use **stateless Streamable HTTP** (`/mcp`), the current MCP tran
 ## Prerequisites
 
 - Java 25, Docker (with Compose)
-- [Ollama](https://ollama.com) running on the host, with the models pulled:
-  ```bash
-  ollama pull qwen2.5:7b-instruct
-  ollama pull nomic-embed-text
-  ```
+- An OpenAI API key, exported as `OPENAI_API_KEY` (or put in `.env`)
 - Optional: `cp .env.example .env` and set `TAVILY_API_KEY` for web search
+
+For local runs without OpenAI, see [Local Ollama](#local-ollama).
 
 ## Run
 
@@ -59,25 +58,47 @@ docker compose up -d --build
 Before presenting, run `./scripts/warm-up.sh`. Between rehearsals, run `./scripts/reset-demo.sh`.
 The run sheet is in [docs/demo-script.md](docs/demo-script.md).
 
-**Fully containerised LLM.** This runs CPU-only on macOS, so it is noticeably slower:
+### Choosing the LLM provider
+
+One setting, `LLM_PROVIDER`, picks the provider for chat (`assistant-api`) and embeddings (`rag-search-mcp`,
+`chat-history-mcp`) together:
+
+| `LLM_PROVIDER` | Chat | Embeddings (768 dims) | Vector tables |
+| --- | --- | --- | --- |
+| `openai` (default) | `gpt-4o-mini` | `text-embedding-3-small` | `wiki_openai`, `chat_history_openai` |
+| `ollama` | `qwen2.5:7b-instruct` | `nomic-embed-text` | `wiki_ollama`, `chat_history_ollama` |
+
+Each provider has its own tables, so switching never mixes vectors from different models; the wiki is embedded on
+the first start with a provider and the semantic cache starts empty. Switch all three AI services together.
+
+If the selected provider isn't usable (no or rejected `OPENAI_API_KEY`, OpenAI or Ollama unreachable), each AI service
+stops at startup with a short `APPLICATION FAILED TO START` report saying what to set. A rate limit or an OpenAI outage
+(HTTP 429/5xx) only logs a warning. `LLM_VERIFY_CONNECTIVITY=false` skips the network check (the key must still be set).
+
+### Local Ollama
+
+Run [Ollama](https://ollama.com) on the host (Metal GPU on a Mac), pull the models, and select it:
 
 ```bash
-OLLAMA_BASE_URL=http://ollama:11434 docker compose --profile ollama up -d --build
+ollama pull qwen2.5:7b-instruct
+ollama pull nomic-embed-text
+LLM_PROVIDER=ollama docker compose up -d --build
+```
+
+**Fully containerised Ollama.** This runs CPU-only on macOS, so it is noticeably slower:
+
+```bash
+LLM_PROVIDER=ollama OLLAMA_BASE_URL=http://ollama:11434 docker compose --profile ollama up -d --build
 ```
 
 The Spring AI Ollama starter pulls any missing models on first start.
-
-**Hosted LLM instead.** This is a configuration change only:
-
-```bash
-LLM_PROVIDER=openai OPENAI_API_KEY=sk-... docker compose up -d assistant-api
-```
 
 ## Develop
 
 ```bash
 ./mvnw verify                                   # build + unit tests, all modules
-docker compose up -d postgres                   # local runs need Postgres (and host Ollama)
+./mvnw install -DskipTests                      # once, so single-module runs find the shared llm-provider-check
+docker compose up -d postgres                   # local runs need Postgres (and OPENAI_API_KEY, or LLM_PROVIDER=ollama)
 ./mvnw spring-boot:run -pl rag-search-mcp       # any module
 SPRING_PROFILES_ACTIVE=persistence ./mvnw spring-boot:run -pl assistant-api
 cd webapp && npm ci && npm run dev              # UI on :5173, proxies /api to :8090

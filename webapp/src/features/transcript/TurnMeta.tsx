@@ -9,7 +9,7 @@ const GROUNDING_LABEL = '↻ grounding guard';
 const GROUNDING_HINT = 'The first draft used no tool, so the harness discarded it and made the model look the facts up';
 const ID_PREVIEW_LENGTH = 8;
 const MS_PER_SECOND = 1000;
-const COST_HINT = 'Cloud-equivalent cost: what these tokens would cost on gpt-4.1-mini';
+const COST_HINT = 'Token cost at gpt-4o-mini rates (cloud-equivalent when running on a local model)';
 
 function formatSeconds(latencyMs: number): string {
   return latencyMs < MS_PER_SECOND ? `${latencyMs} ms` : `${(latencyMs / MS_PER_SECOND).toFixed(2)} s`;
