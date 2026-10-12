@@ -17,22 +17,43 @@ spring:
         # Stateless Streamable HTTP: no server-side session, so instances can restart or scale out freely.
         protocol: STATELESS
         instructions: Semantic search over the JDD 2026 wiki.
+    model:
+      chat: none
+      embedding: ${llm.provider:openai}
+      image: none
+      audio:
+        speech: none
+        transcription: none
+      moderation: none
+    openai:
+      api-key: ${OPENAI_API_KEY:}
+      base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
+      embedding:
+        metadata-mode: none
+        options:
+          model: ${llm.embedding-models.openai}
+          # Same width as nomic-embed-text, so both providers share one table shape.
+          dimensions: 768
     ollama:
       base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
       embedding:
-        model: ${EMBEDDING_MODEL:nomic-embed-text}
+        model: ${llm.embedding-models.ollama}
       init:
         pull-model-strategy: ${OLLAMA_PULL_MODEL_STRATEGY:when_missing}
         chat:
           include: false
-    model:
-      chat: none
     vectorstore:
       pgvector:
-        table-name: wiki
+        # One table per provider: vectors from different embedding models never meet.
+        table-name: wiki_${llm.provider:openai}
         id-type: text
         dimensions: ${EMBEDDING_DIMENSIONS:768}
         initialize-schema: true
+llm:
+  embedding-models:
+    openai: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
+    ollama: ${OLLAMA_EMBEDDING_MODEL:nomic-embed-text}
+  embedding-model: ${llm.embedding-models.${llm.provider:openai}}
 management:
   endpoints:
     web:
