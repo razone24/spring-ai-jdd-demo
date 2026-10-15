@@ -5,6 +5,7 @@ import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
@@ -18,17 +19,21 @@ import java.util.UUID;
 public class ChatHistoryTools {
 
     private static final int TOP_K = 3;
+    private static final String EMBEDDING_MODEL = "embedding_model";
 
     private final VectorStore vectorStore;
     private final ObjectMapper objectMapper;
     private final double similarityThreshold;
+    private final String embeddingModel;
 
     public ChatHistoryTools(VectorStore vectorStore,
                             ObjectMapper objectMapper,
-                            @Value("${chat-history.similarity-threshold:0.5}") double similarityThreshold) {
+                            @Value("${chat-history.similarity-threshold}") double similarityThreshold,
+                            @Value("${llm.embedding-model}") String embeddingModel) {
         this.vectorStore = vectorStore;
         this.objectMapper = objectMapper;
         this.similarityThreshold = similarityThreshold;
+        this.embeddingModel = embeddingModel;
     }
 
     @Tool(name = "recordChatHistory", description = """
@@ -40,7 +45,8 @@ public class ChatHistoryTools {
         String id = UUID.randomUUID().toString();
         Document doc = new Document(id, question, Map.of(
                 "answer", answer,
-                "timestamp", Instant.now().toString()));
+                "timestamp", Instant.now().toString(),
+                EMBEDDING_MODEL, embeddingModel));
         vectorStore.add(List.of(doc));
         return id;
     }
@@ -54,6 +60,9 @@ public class ChatHistoryTools {
                                                                            .query(question)
                                                                            .topK(TOP_K)
                                                                            .similarityThreshold(similarityThreshold)
+                                                                           .filterExpression(new FilterExpressionBuilder()
+                                                                                   .eq(EMBEDDING_MODEL, embeddingModel)
+                                                                                   .build())
                                                                            .build());
         List<Map<String, Object>> mapped = results.stream()
                                                   .map(d -> Map.<String, Object>of(

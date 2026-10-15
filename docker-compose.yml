@@ -7,11 +7,18 @@ x-spring-health: &spring-health
   retries: 30
   start_period: 20s
 
-x-ollama: &ollama-connection
-  # Default: Ollama running natively on the host (uses the Mac's GPU — much faster than a container).
+x-llm: &llm-connection
+  # One switch for chat and embeddings in every AI service: openai (default) or ollama.
+  LLM_PROVIDER: ${LLM_PROVIDER:-openai}
+  OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+  OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com/v1}
+  OPENAI_EMBEDDING_MODEL: ${OPENAI_EMBEDDING_MODEL:-text-embedding-3-small}
+  # Ollama runs natively on the host by default (uses the Mac's GPU — much faster than a container).
   # With `--profile ollama`, set OLLAMA_BASE_URL=http://ollama:11434 to use the containerised one.
   OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
-  EMBEDDING_MODEL: ${EMBEDDING_MODEL:-nomic-embed-text}
+  OLLAMA_EMBEDDING_MODEL: ${OLLAMA_EMBEDDING_MODEL:-nomic-embed-text}
+  # false skips the startup network probe of the provider (e.g. on a venue network that blocks it).
+  LLM_VERIFY_CONNECTIVITY: ${LLM_VERIFY_CONNECTIVITY:-true}
 
 x-postgres: &postgres-connection
   POSTGRES_URL: jdbc:postgresql://postgres:5432/jdd
@@ -58,7 +65,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
-      <<: [*ollama-connection, *postgres-connection]
+      <<: [*llm-connection, *postgres-connection]
     depends_on:
       postgres:
         condition: service_healthy
@@ -76,7 +83,8 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
-      <<: [*ollama-connection, *postgres-connection]
+      <<: [*llm-connection, *postgres-connection]
+      CHAT_HISTORY_SIMILARITY_THRESHOLD:
     depends_on:
       postgres:
         condition: service_healthy
@@ -107,14 +115,12 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
-      <<: [*ollama-connection, *postgres-connection]
+      <<: [*llm-connection, *postgres-connection]
       SPRING_PROFILES_ACTIVE: persistence
-      LLM_PROVIDER: ${LLM_PROVIDER:-ollama}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:7b-instruct}
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-not-set}
-      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4.1-mini}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
       ASSISTANT_TODAY: ${ASSISTANT_TODAY:-}
-      ASSISTANT_CACHE_HIT_THRESHOLD: ${ASSISTANT_CACHE_HIT_THRESHOLD:-0.9}
+      ASSISTANT_CACHE_HIT_THRESHOLD:
       CONFERENCE_INFO_MCP_URL: http://conference-info-mcp:8080
       RAG_SEARCH_MCP_URL: http://rag-search-mcp:8081
       CHAT_HISTORY_MCP_URL: http://chat-history-mcp:8082

@@ -20,6 +20,8 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class WikiIngestorTest {
 
+    private static final String EMBEDDING_MODEL = "test-model";
+
     @Mock
     VectorStore vectorStore;
 
@@ -36,6 +38,17 @@ class WikiIngestorTest {
 
         assertThat(firstIds).isNotEmpty().doesNotHaveDuplicates().isEqualTo(secondIds);
         assertThat(firstIds.getFirst()).matches("[a-f0-9]{16}-\\d+");
+    }
+
+    @Test
+    void shouldReembedWhenEmbeddingModelChanges() throws Exception {
+        when(chunkIndex.exists(any())).thenReturn(false);
+
+        List<String> firstIds = ingestAndCollectIds("model-a");
+        reset(vectorStore);
+        List<String> secondIds = ingestAndCollectIds("model-b");
+
+        assertThat(firstIds).doesNotContainAnyElementsOf(secondIds);
     }
 
     @Test
@@ -60,7 +73,11 @@ class WikiIngestorTest {
     }
 
     private List<String> ingestAndCollectIds() throws Exception {
-        newIngestor().ingest();
+        return ingestAndCollectIds(EMBEDDING_MODEL);
+    }
+
+    private List<String> ingestAndCollectIds(String embeddingModel) throws Exception {
+        newIngestor(embeddingModel).ingest();
         @SuppressWarnings("unchecked")
         ArgumentCaptor<List<Document>> captor = ArgumentCaptor.forClass(List.class);
         verify(vectorStore, atLeastOnce()).add(captor.capture());
@@ -68,7 +85,11 @@ class WikiIngestorTest {
     }
 
     private WikiIngestor newIngestor() {
+        return newIngestor(EMBEDDING_MODEL);
+    }
+
+    private WikiIngestor newIngestor(String embeddingModel) {
         lenient().when(chunkIndex.retainOnlyFiles(anySet())).thenReturn(0);
-        return new WikiIngestor(vectorStore, new PathMatchingResourcePatternResolver(), chunkIndex);
+        return new WikiIngestor(vectorStore, new PathMatchingResourcePatternResolver(), chunkIndex, embeddingModel);
     }
 }

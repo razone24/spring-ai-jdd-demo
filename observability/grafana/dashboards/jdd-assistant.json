@@ -346,7 +346,7 @@
     {
       "type": "stat",
       "title": "Cloud cost*",
-      "description": "*The local model is free to run; this prices its tokens at gpt-4.1-mini rates to show what the same traffic would cost in the cloud.",
+      "description": "*Token cost at gpt-4o-mini rates: the real spend when running on OpenAI; for the local model, what the same traffic would cost in the cloud.",
       "id": 7,
       "datasource": {
         "type": "grafana-postgresql-datasource",

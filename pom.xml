@@ -16,6 +16,7 @@
     <description>Spring AI agent + MCP servers demo for JDD Krakow 2026</description>
 
     <modules>
+        <module>llm-provider-check</module>
         <module>conference-info-mcp</module>
         <module>rag-search-mcp</module>
         <module>chat-history-mcp</module>

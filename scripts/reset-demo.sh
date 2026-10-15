@@ -6,7 +6,17 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 docker compose exec -T postgres psql -U jdd -d jdd -q <<'SQL'
-TRUNCATE chat_history;
+-- The semantic cache has one table per LLM provider (plus the pre-provider one); clear whichever exist.
+DO $$
+DECLARE
+    cache_table text;
+BEGIN
+    FOREACH cache_table IN ARRAY ARRAY['chat_history', 'chat_history_openai', 'chat_history_ollama'] LOOP
+        IF to_regclass(cache_table) IS NOT NULL THEN
+            EXECUTE format('TRUNCATE %I', cache_table);
+        END IF;
+    END LOOP;
+END $$;
 TRUNCATE query_audit CASCADE;
 DELETE FROM spring_ai_chat_memory;
 SQL

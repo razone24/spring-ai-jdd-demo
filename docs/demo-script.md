@@ -26,10 +26,12 @@ Everything under *Extra time / Q&A* is optional.
 
 ## Pre-flight (15 min before the talk)
 
-1. Start Docker Desktop. Check that Ollama is serving and has the models:
+1. Start Docker Desktop. Export the OpenAI key (the stage runs on OpenAI, the default provider):
    ```bash
-   ollama list   # qwen2.5:7b-instruct and nomic-embed-text
+   export OPENAI_API_KEY=sk-...   # without it every AI service stops with "OPENAI_API_KEY is not set"
    ```
+   *Local rehearsal on Ollama instead:* `ollama list` (qwen2.5:7b-instruct and nomic-embed-text), then prefix the
+   commands below with `LLM_PROVIDER=ollama`.
 2. Start the stack and check every service is healthy:
    ```bash
    docker compose up -d --build && docker compose ps
@@ -40,10 +42,10 @@ Everything under *Extra time / Q&A* is optional.
    ```
 4. Put the UI and Grafana side by side, with Grafana on *Last 15 minutes*. Open the IDE tabs.
 
-> - Expect 5–15 s per LLM answer on an M2 Pro (Metal GPU); cache hits take under 100 ms. Talk while the model thinks.
->   The *waiting on model · Ns* counter is part of the story.
-> - Temperature 0, a fixed seed (`spring.ai.ollama.chat.seed: 42`) and a stable tool order make the questions below
->   highly repeatable *when asked in this order after a reset*. That is how they were verified, run after run.
+> - LLM answers take seconds (5–15 s on local Ollama on an M2 Pro); cache hits take under 100 ms. Talk while the model
+>   thinks. The *waiting on model · Ns* counter is part of the story.
+> - Temperature 0 and a stable tool order (plus a fixed seed on Ollama) make the questions below highly repeatable
+>   *when asked in this order after a reset*. They were verified on Ollama; re-rehearse them on OpenAI before the talk.
 >   Improvised questions can take other paths, and that's fine, but rehearse anything you plan to ask.
 > - The agenda is **sample data**. Your slot lives in
 >   `conference-info-mcp/src/main/java/com/springai/jdd/conference/tools/Agenda.java` and
@@ -110,7 +112,7 @@ Go back to the **Q1 conversation** and **ask:** `Who else is speaking in that ro
 | --- | --- | --- | --- |
 | 1 | `conference-info-mcp/…/tools/ScheduleTools.java` | "An MCP tool is a Spring bean method. The annotations are the contract the model reads." | `@Tool` description, the optional `@ToolParam` filters, the 3-line body |
 | 2 | `conference-info-mcp/src/main/resources/application.yaml` | "One property turns it into an MCP server: stateless Streamable HTTP." | `protocol: STATELESS` |
-| 3 | `assistant-api/src/main/resources/application.yml` | "The agent is an MCP client of four servers. Swapping the LLM is one property." | `spring.ai.model.chat`, `mcp.client.streamable-http.connections` |
+| 3 | `assistant-api/src/main/resources/application.yml` | "The agent is an MCP client of four servers. Swapping the LLM is one property: `LLM_PROVIDER` switches chat and embeddings together." | `spring.ai.model.chat`, `mcp.client.streamable-http.connections` |
 | 4 | `assistant-api/…/agent/AgentConfiguration.java` | "Agent = Model + Harness, as one bean: the model, the system prompt, and three advisors." | `defaultAdvisors(memory, grounding guard, bounded tool loop)` |
 | 5 | `assistant-api/…/agent/OrchestratorAgent.java` | "One answer is four steps; only step 2 needs intelligence." | the numbered comments in `answer()`, then `askModel()` |
 
@@ -125,7 +127,7 @@ discard and send it back once."*
 | --- | --- |
 | Questions · Cache hit rate · Refusals · Grounding retries | Exact numbers from the Postgres audit trail |
 | *Answer latency p95 — LLM vs semantic cache* | Seconds vs milliseconds. That's the cache's whole point |
-| Cloud cost* | The local model is free; this is what the same tokens would cost on gpt-4.1-mini |
+| Cloud cost* | What the tokens cost at gpt-4o-mini rates: the real spend on stage; on a local Ollama run, what the same tokens would have cost |
 | Tokens per minute | Prompt tokens dominate, because tool definitions and results are re-sent every round |
 | LLM call latency (`gen_ai` observation) | Spring AI's built-in Micrometer observations, zero custom code |
 | Recent questions | Every question's tool path, outcome, tokens and latency, joined by request id |
@@ -164,8 +166,6 @@ are merged by reciprocal rank fusion (`rag-search-mcp/…/RagSearchTools.java`, 
 curl -s localhost:8080/mcp -H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream' \
      -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | jq '.result.tools[].name'
 ```
-
-**Swap the model.** `LLM_PROVIDER=openai OPENAI_API_KEY=sk-... docker compose up -d assistant-api`. Same code.
 
 ### Backup questions
 
