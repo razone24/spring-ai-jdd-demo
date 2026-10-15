@@ -6,23 +6,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Live demo for the JDD 2026 (Kraków) talk "The Future of Software Architecture in the Age of AI". It is a Maven
 multi-module monorepo: a Spring AI agent (`assistant-api`), four MCP servers, a React UI (`webapp/`) and an
-observability stack (`observability/`). Stack: Java 25, Spring Boot 4.1, Spring AI 2.0, Ollama, Postgres + pgvector.
+observability stack (`observability/`). Stack: Java 25, Spring Boot 4.1, Spring AI 2.0, OpenAI (default) or Ollama,
+Postgres + pgvector.
 
 | Module | Port | Role |
 | --- | --- | --- |
 | `assistant-api` | 8090 | Agent + harness. MCP **client** of the four servers; `POST /query` |
 | `conference-info-mcp` | 8080 | `getConferenceOverview`, `getConferenceSchedule(day, room, track, keyword)` (static data in `Agenda.java`) |
-| `rag-search-mcp` | 8081 | `searchKnowledgeBase` over `src/main/resources/wiki/*.md` (pgvector table `wiki`; hybrid vector + full-text, `HybridRanking`) |
-| `chat-history-mcp` | 8082 | `searchChatHistory`, `recordChatHistory` (pgvector table `chat_history`) |
+| `rag-search-mcp` | 8081 | `searchKnowledgeBase` over `src/main/resources/wiki/*.md` (pgvector table `wiki_<provider>`; hybrid vector + full-text, `HybridRanking`) |
+| `chat-history-mcp` | 8082 | `searchChatHistory`, `recordChatHistory` (pgvector table `chat_history_<provider>`) |
 | `web-search-mcp` | 8083 | `searchWeb` (Tavily; returns a "not configured" result without `TAVILY_API_KEY`) |
 | `webapp` | 5173 | React 19 + Vite; nginx proxies `/api/*` to `assistant-api:8090` |
+| `llm-provider-check` | – | Shared jar used by the three AI modules: validates the LLM provider before any model bean is created |
 
 ## Commands
 
 ```bash
 ./mvnw verify                                  # all modules, unit tests
 ./mvnw test -pl assistant-api                  # one module
-docker compose up -d --build                   # full stack (host Ollama on :11434)
+docker compose up -d --build                   # full stack (OPENAI_API_KEY; LLM_PROVIDER=ollama for host Ollama on :11434)
+./mvnw install -DskipTests                     # once, before ./mvnw spring-boot:run -pl <module>
 docker compose up -d --build assistant-api     # rebuild one service
 ./scripts/reset-demo.sh                        # clear cache, chat memory, audit
 cd webapp && npm run build && npm run lint     # UI checks
@@ -50,14 +53,20 @@ cd webapp && npm run build && npm run lint     # UI checks
   reaches the model as "unavailable, do not guess", and answers built from a failed tool are never cached. The
   semantic cache also ignores entries older than `assistant.cache.max-age` (24 h). nginx re-resolves
   `assistant-api` through Docker DNS, so recreating that container doesn't break the UI.
-- **LLM provider.** `spring.ai.model.chat` selects it (`ollama` by default, `openai` for any OpenAI-compatible
-  API). Both starters are on the classpath. Embeddings in the MCP servers use the Ollama starter
-  (`nomic-embed-text`, 768 dimensions).
+- **LLM provider.** One property, `llm.provider` (env `LLM_PROVIDER`, default `openai`, or `ollama`), drives
+  `spring.ai.model.chat` in `assistant-api` and `spring.ai.model.embedding` in `rag-search-mcp`/`chat-history-mcp`;
+  YAML references it as `${llm.provider:openai}` and resolves per-provider values with nested placeholders
+  (embedding model, table names, thresholds). Both starters are on each AI module's classpath; OpenAI's image, audio
+  and moderation models are set to `none`. OpenAI uses `gpt-4o-mini` and `text-embedding-3-small` at 768 dimensions
+  (same as `nomic-embed-text`). `llm-provider-check` runs as a `BeanFactoryPostProcessor` and fails startup through a
+  `FailureAnalyzer` when the provider is unknown, the key is missing/rejected, or the provider is unreachable
+  (`llm.verify-connectivity=false` skips the network probe). Chat-history entries carry an `embedding_model` metadata
+  tag and searches filter on it.
 - **Persistence.** One Postgres (`pgvector/pgvector:pg17`). Flyway in `assistant-api` owns `spring_ai_chat_memory`,
   `query_audit` and `tool_call_audit` (`baseline-on-migrate`, because the vector tables share the schema).
   Extensions are created in `observability/postgres/init/01-init.sql`.
-- **Wiki ingest.** Chunk ids are `sha256(CHUNKING_VERSION + file bytes)[0:16]-<section>`. Unchanged files are
-  skipped, and chunks of changed or deleted files are pruned. Bump `CHUNKING_VERSION` when the chunking changes.
+- **Wiki ingest.** Chunk ids are `sha256(CHUNKING_VERSION + embedding model + file bytes)[0:16]-<section>`.
+  Unchanged files are skipped, and chunks of changed or deleted files are pruned. Bump `CHUNKING_VERSION` when the chunking changes.
 - **Metrics.** Custom meters are `assistant.*` (`audit/metrics/Metrics.java`). Spring AI's own observations
   (`gen_ai_client_*`, `spring_ai_tool_*`, `db_vector_*`) are exported too. The Grafana dashboard is generated JSON
   in `observability/grafana/dashboards/jdd-assistant.json`.

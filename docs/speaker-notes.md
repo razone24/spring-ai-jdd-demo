@@ -85,7 +85,7 @@ The price? Every answer now takes several round trips to the LLM, and every roun
 
 ## Slide 20 — DEMO
 
-Alright, enough theory. The best way to make all of this click is through actual code, so I'll hand it over to Adi — who will walk us through how it all works in practice, in the language we all know and love: Java. Everything runs locally: a Spring AI agent on a local LLM, four MCP servers, Postgres and Grafana. The run sheet with the questions is in docs/demo-script.md.
+Alright, enough theory. The best way to make all of this click is through actual code, so I'll hand it over to Adi — who will walk us through how it all works in practice, in the language we all know and love: Java. Everything but the model runs locally: a Spring AI agent on gpt-4o-mini (one setting swaps in a local LLM), four MCP servers, Postgres and Grafana. The run sheet with the questions is in docs/demo-script.md.
 
 ## Slide 21 — This presentation was made with AI
 

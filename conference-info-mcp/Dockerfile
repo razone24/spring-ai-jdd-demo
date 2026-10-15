@@ -3,6 +3,7 @@ FROM eclipse-temurin:25-jdk AS build
 WORKDIR /workspace
 COPY .mvn/ .mvn/
 COPY mvnw pom.xml ./
+COPY llm-provider-check/pom.xml llm-provider-check/
 COPY conference-info-mcp/pom.xml conference-info-mcp/
 COPY rag-search-mcp/pom.xml rag-search-mcp/
 COPY chat-history-mcp/pom.xml chat-history-mcp/
