@@ -1,0 +1,25 @@
+.list {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  align-items: center;
+}
+
+.pill {
+  padding: 1px 7px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-hover);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+.more {
+  color: var(--text-faint);
+  font-size: var(--text-xs);
+  cursor: help;
+}
+
+.empty {
+  color: var(--text-faint);
+}

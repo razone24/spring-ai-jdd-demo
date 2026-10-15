@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Future of Software Architecture in the Age of AI</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --accent: #2563eb;
+      --accent-soft: #dbeafe;
+      --dark: #1e293b;
+      --muted: #64748b;
+      --light: #f1f5f9;
+      --border: #e2e8f0;
+    }
+
+    .reveal {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 38px;
+      color: var(--dark);
+    }
+
+    .reveal h1,
+    .reveal h2,
+    .reveal h3 {
+      font-family: 'Inter', sans-serif;
+      font-weight: 800;
+      color: var(--dark);
+      text-transform: none;
+      letter-spacing: -0.02em;
+    }
+
+    .reveal h1 {
+      font-size: 2.15em;
+      line-height: 1.15;
+      font-weight: 900;
+    }
+
+    .reveal h2 {
+      font-size: 1.55em;
+      margin-bottom: 0.45em;
+      font-weight: 800;
+    }
+
+    .reveal h3 {
+      font-size: 1em;
+      font-weight: 800;
+    }
+
+    .reveal h2 .accent,
+    .reveal h1 .accent,
+    .statement-title .accent {
+      font-weight: inherit;
+    }
+
+    .reveal .statement-title,
+    .reveal .demo-title,
+    .reveal .thank-title,
+    .speaker-card .bio h2 {
+      font-weight: 800;
+    }
+
+    .why-how .box h3 {
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .reveal .progress span {
+      background: var(--accent);
+    }
+
+    .reveal .slide-number {
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .reveal section {
+      text-align: center;
+    }
+
+    .accent {
+      color: var(--accent);
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .small {
+      font-size: 0.62em;
+    }
+
+    .medium {
+      font-size: 0.82em;
+    }
+
+    .accent-line {
+      width: 72px;
+      height: 3px;
+      background: var(--accent);
+      margin: 18px auto;
+      border-radius: 2px;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 0.55em;
+      font-weight: 600;
+      background: var(--light);
+      color: var(--dark);
+    }
+
+    .tag-accent {
+      background: var(--accent);
+      color: white;
+    }
+
+    .title-slide .title-byline {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px 28px;
+      margin-top: 26px;
+      font-size: 1.05em;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--dark);
+    }
+
+    .title-slide .title-byline-sep {
+      width: 3px;
+      height: 1.15em;
+      background: var(--accent);
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .flow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 24px auto;
+    }
+
+    .flow-node {
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-size: 0.58em;
+      font-weight: 600;
+      background: white;
+      border: 2px solid var(--border);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    }
+
+    .flow-node.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .flow-arrow {
+      font-size: 0.72em;
+      color: var(--muted);
+    }
+
+    .agent-steps {
+      display: flex;
+      gap: 28px;
+      justify-content: center;
+      margin: 32px auto;
+      flex-wrap: wrap;
+    }
+
+    .agent-step {
+      width: 240px;
+      min-height: 150px;
+      padding: 26px 18px;
+      border-radius: 14px;
+      background: white;
+      border: 2px solid var(--border);
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .agent-step .num {
+      font-size: 1.8em;
+      font-weight: 900;
+      color: var(--accent);
+      line-height: 1;
+      text-align: center;
+    }
+
+    .agent-step .lbl {
+      font-size: 0.62em;
+      font-weight: 700;
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    .harness-eq {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      margin: 36px auto 0;
+      font-weight: 800;
+      font-size: 1em;
+      flex-wrap: wrap;
+    }
+
+    .harness-eq .eq-term {
+      padding: 12px 26px;
+      border-radius: 12px;
+      background: var(--accent);
+      color: white;
+      border: 2px solid var(--accent);
+      box-shadow: 0 2px 12px rgba(37, 99, 235, 0.2);
+    }
+
+    .harness-eq .eq-term.ghost {
+      background: var(--light);
+      color: var(--dark);
+      border-color: var(--border);
+      box-shadow: 0 1px 6px rgba(15, 23, 42, 0.04);
+    }
+
+    .harness-eq .eq-sign {
+      font-size: 1.2em;
+      font-weight: 900;
+      color: var(--muted);
+    }
+
+    .harness-eq .eq-sign.accent {
+      color: var(--accent);
+    }
+
+    .reveal p.harness-def {
+      font-size: 0.55em;
+      color: var(--muted);
+      max-width: 820px;
+      margin: 16px auto 0;
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    .why-how {
+      display: flex;
+      gap: 40px;
+      max-width: 900px;
+      margin: 28px auto;
+      text-align: left;
+    }
+
+    .why-how .box {
+      flex: 1;
+      padding: 28px;
+      border-radius: 14px;
+      background: var(--light);
+      border: 1px solid var(--border);
+    }
+
+    .why-how .box h3 {
+      font-size: 0.72em;
+      margin: 0 0 10px;
+    }
+
+    .why-how .box p {
+      font-size: 0.58em;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .benefit-chips {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 28px;
+    }
+
+    .chip {
+      padding: 14px 22px;
+      border-radius: 10px;
+      font-size: 0.56em;
+      font-weight: 600;
+      background: white;
+      border: 2px solid var(--accent-soft);
+      max-width: 260px;
+    }
+
+    .speaker-card {
+      display: flex;
+      align-items: center;
+      gap: 52px;
+      max-width: 1000px;
+      margin: 0 auto;
+      text-align: left;
+    }
+
+    .speaker-card img {
+      width: 300px;
+      height: 300px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 5px solid var(--accent-soft);
+      flex-shrink: 0;
+    }
+
+    .speaker-card .bio h2 {
+      text-align: left;
+      margin: 0 0 12px;
+      font-size: 1.55em;
+      font-weight: 800;
+    }
+
+    .speaker-card .bio .role {
+      font-size: 0.68em;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .speaker-card .bio p {
+      font-size: 0.65em;
+      line-height: 1.65;
+      color: var(--muted);
+      margin: 8px 0;
+    }
+
+    .step-hint {
+      font-size: 0.5em;
+      color: var(--muted);
+      margin-top: 14px;
+    }
+
+    .timeline {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      align-items: flex-end;
+      margin: 32px auto 0;
+      max-width: 700px;
+    }
+
+    .timeline .yr {
+      flex: 1;
+      font-size: 0.48em;
+      font-weight: 600;
+      color: var(--muted);
+      padding-top: 8px;
+      border-top: 3px solid var(--border);
+    }
+
+    .timeline .yr.hl {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .timeline .yr span {
+      display: block;
+      font-size: 1.1em;
+      font-weight: 800;
+      color: var(--dark);
+      margin-bottom: 4px;
+    }
+
+    /* ── Harness evolution timeline ── */
+    .harness-timeline-wrap {
+      position: relative;
+      margin: 38px auto 0;
+      max-width: 860px;
+      padding: 0 12px;
+    }
+
+    .harness-timeline-track {
+      position: relative;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      margin-top: 80px;
+      /* room for labels above */
+    }
+
+    .harness-timeline-track::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 90%;
+      /* filled to mid-2026 */
+      background: linear-gradient(90deg, #93c5fd 0%, var(--accent) 100%);
+      border-radius: 3px;
+    }
+
+    .harness-timeline-years {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    .harness-yr {
+      font-size: 0.44em;
+      font-weight: 700;
+      color: var(--muted);
+      text-align: center;
+      min-width: 0;
+    }
+
+    .harness-yr.hl {
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+    /*
+  Milestone wrapper: zero-width absolute anchor on the track.
+  Carries data-step-order so the animation transform stays here
+  and never conflicts with the children's own positioning transforms.
+*/
+    .harness-milestone {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      /* = 6px, the track height */
+      width: 0;
+      /* data-step-order animation will apply transform here */
+    }
+
+    /* dot: centred on the 6-px track */
+    .harness-dot {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 3px solid white;
+      box-shadow: 0 0 0 2px var(--accent);
+      z-index: 1;
+    }
+
+    /* label callout above the dot */
+    .harness-label {
+      position: absolute;
+      left: 0;
+      bottom: calc(100% + 14px);
+      transform: translateX(-50%);
+      background: var(--accent);
+      color: white;
+      font-size: 0.42em;
+      font-weight: 700;
+      padding: 7px 14px;
+      border-radius: 8px;
+      white-space: nowrap;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+      line-height: 1.3;
+      text-align: center;
+    }
+
+    .harness-label::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top-color: var(--accent);
+    }
+
+    .diagram-wrap {
+      max-width: 100%;
+      margin: 0;
+      padding: 4px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 14px rgba(0, 0, 0, 0.06);
+      border: 1px solid var(--border);
+    }
+
+    .diagram-wrap img,
+    .diagram-wrap > svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: 620px;
+      object-fit: contain;
+    }
+
+    /* Flowing "stream" connectors — dashes scroll from agent toward each tool */
+    @keyframes mcp-stream {
+      to {
+        stroke-dashoffset: -14;
+      }
+    }
+
+    .mcp-flow {
+      stroke-dasharray: 9 5;
+      animation: mcp-stream 0.6s linear infinite;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .mcp-flow {
+        animation: none;
+      }
+    }
+
+    .slide-diagram .diagram-wrap {
+      margin-top: 4px;
+    }
+
+    .bc-compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px 28px;
+      max-width: 920px;
+      margin: 20px auto;
+      align-items: stretch;
+    }
+
+    .bc-compare .col-h {
+      font-size: 0.58em;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .bc-compare .col-h.ben {
+      color: var(--accent);
+      border-bottom-color: var(--accent-soft);
+    }
+
+    .bc-compare .col-h.ch {
+      color: #475569;
+      border-bottom-color: #cbd5e1;
+    }
+
+    [data-step-order] {
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(8px);
+      transition: opacity 0.35s ease, transform 0.35s ease, visibility 0.35s;
+    }
+
+    [data-step-order].revealed {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .flow-arrow[data-after-step] {
+      opacity: 0;
+      visibility: hidden;
+      transform: none;
+      display: inline-block;
+      transition: opacity 0.35s ease, visibility 0.35s;
+    }
+
+    .flow-arrow[data-after-step].revealed {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* PDF / print mode: reveal all animated content so nothing is hidden in the exported PDF */
+    .reveal.print-pdf [data-step-order],
+    .reveal.print-pdf .flow-arrow[data-after-step],
+    body.print-pdf [data-step-order],
+    body.print-pdf .flow-arrow[data-after-step] {
+      opacity: 1 !important;
+      visibility: visible !important;
+      transform: none !important;
+    }
+
+    .bc-card {
+      padding: 20px 24px 20px 22px;
+      border-radius: 12px;
+      font-size: 0.56em;
+      font-weight: 500;
+      line-height: 1.45;
+      text-align: left;
+      min-height: 3.2em;
+      color: var(--dark);
+      background: #fff;
+      border: 2px solid var(--border);
+      box-shadow: 0 1px 6px rgba(15, 23, 42, 0.04);
+    }
+
+    .bc-card.ben {
+      border-color: var(--accent-soft);
+      border-left: 4px solid var(--accent);
+    }
+
+    .bc-card.ch {
+      background: var(--light);
+      border-color: #e2e8f0;
+      border-left: 4px solid #94a3b8;
+    }
+
+    .bc-hint {
+      font-size: 0.5em;
+      color: var(--muted);
+      margin-top: 14px;
+    }
+
+    .statement-slide .statement-emoji {
+      font-size: 2.2em;
+      line-height: 1;
+      margin: 0 0 12px;
+      filter: grayscale(0.15);
+    }
+
+    .statement-slide .statement-title {
+      font-size: 2.35em;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin: 0;
+    }
+
+    .statement-slide .accent-line {
+      margin: 22px auto;
+    }
+
+    .demo-slide {
+      background: linear-gradient(160deg, #1e293b 0%, #0f172a 100%) !important;
+    }
+
+    .demo-slide .demo-emoji {
+      font-size: 2.4em;
+      margin: 0 0 8px;
+      line-height: 1;
+    }
+
+    .demo-slide .demo-title {
+      font-size: 3.2em;
+      font-weight: 900;
+      letter-spacing: 0.28em;
+      margin: 0;
+      padding-left: 0.28em;
+      color: #fff;
+      text-indent: 0;
+    }
+
+    .demo-slide .accent-line {
+      background: #93c5fd;
+      width: 96px;
+      margin: 28px auto 0;
+    }
+
+    .statement-slide.statement-ai .statement-title {
+      font-size: 2em;
+      max-width: 900px;
+      margin: 0 auto;
+      line-height: 1.25;
+    }
+
+    .thank-slide .thank-title {
+      font-size: 2.75em;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin: 0;
+    }
+
+    .thank-slide .thank-connect {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 8px 22px;
+      border-radius: 24px;
+      font-size: 0.52em;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border: 2px solid #bfdbfe;
+    }
+
+    .thank-grid {
+      display: flex;
+      gap: 72px;
+      justify-content: center;
+      align-items: flex-start;
+      margin-top: 36px;
+      flex-wrap: wrap;
+    }
+
+    .thank-person {
+      padding: 28px 32px 24px;
+      border-radius: 18px;
+      background: white;
+      border: 2px solid var(--border);
+      box-shadow: 0 8px 28px rgba(37, 99, 235, 0.08);
+      min-width: 240px;
+    }
+
+    .thank-person img.qr {
+      width: 200px;
+      height: 200px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto;
+      background: #fff;
+      padding: 10px;
+      border-radius: 8px;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+
+    .thank-person .name {
+      font-size: 0.82em;
+      font-weight: 800;
+      margin-top: 16px;
+      color: var(--dark);
+    }
+
+    .thank-slide .accent-line {
+      margin: 24px auto 0;
+      width: 88px;
+    }
+
+    .reveal-speaker-notes-window .speaker-notes-text,
+    .reveal-speaker-notes-window .speaker-controls-notes .notes-inner,
+    .speaker-notes .notes-inner,
+    .notes-inner {
+      font-size: 1.65rem !important;
+      line-height: 1.55 !important;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <section class="title-slide">
+        <span class="tag tag-accent">JDD 2026 · Kraków</span>
+        <h1>The Future of Software<br>Architecture in the Age of AI</h1>
+        <div class="accent-line"></div>
+        <p class="title-byline">
+          <span><span class="accent">Razvan</span> Balasa</span>
+          <span class="title-byline-sep" aria-hidden="true"></span>
+          <span><span class="accent">Adrian</span> Coman</span>
+        </p>
+        <aside class="notes">
+          Every presentation has to be about AI these days, right? And fair enough — it's been the defining buzzword for the past three years, showing up everywhere from corporate decks to casual conversations with friends and colleagues. It moves so fast that even this presentation is struggling to keep up. A year ago, we were still asking whether AI was here to stay, tracing its evolution from the nineties to the present. But honestly, what happened in the last three years matters far more than everything that came before it. We all know the moment: late 2022, ChatGPT launched, and neither the world nor our industry has been the same since.
+        </aside>
+      </section>
+
+      <section>
+        <h2>2026: <span class="accent">The Year of Agents</span></h2>
+        <div class="accent-line"></div>
+        <div class="timeline">
+          <div class="yr"><span>2023</span>Copilots everywhere</div>
+          <div class="yr"><span>2024</span>Tool use &amp; RAG in prod</div>
+          <div class="yr"><span>2025</span>Orchestration matures</div>
+          <div class="yr hl"><span>2026</span>Agents ship for real</div>
+        </div>
+        <aside class="notes">
+          But it didn't all happen overnight. In 2023, AI entered our IDEs — copilots started autocompleting code, one snippet at a time. In 2024, teams began wiring RAG pipelines to real services, giving models actual knowledge of the world they were operating in. By 2025, orchestration patterns had matured and AI was gaining real autonomy. And now, in 2026, we stop experimenting. Agents are making decisions. Agents are shipping. Models got smarter. Systems got agentic.
+        </aside>
+      </section>
+
+      <section>
+        <div class="speaker-card">
+          <img src="presentation/assets/razvan.jpg" alt="Razvan Balasa">
+          <div class="bio">
+            <h2>Razvan Balasa</h2>
+            <p class="role">Java Technical Lead @ Playtika</p>
+          </div>
+        </div>
+        <aside class="notes">
+          Hello everyone, my name is Razvan. I'm a Java Technical Lead at Playtika and a software engineer with eight years of experience — playing with pretty much every tool in the box, from writing features and crafting deployment pipelines, to shaping the infrastructure and architecture of the systems I work on.
+        </aside>
+      </section>
+
+      <section>
+        <div class="speaker-card">
+          <img src="presentation/assets/adrian.jpg" alt="Adrian Coman">
+          <div class="bio">
+            <h2>Adrian Coman</h2>
+            <p class="role">Software Engineer @ Crowdstrike</p>
+          </div>
+        </div>
+        <aside class="notes">
+          I am Adrian. I have around 10 years experience across several industries: banking, telecom, gaming, security. Currently I'm part of GenAI team @Crowdstrike where I'm building solutions with and for AI. But enough about be me, let's dive right in.
+        </aside>
+      </section>
+
+      <section data-step-slide="agents">
+        <h2>What are <span class="accent">AI agents</span>?</h2>
+        <div class="agent-steps">
+          <div class="agent-step" data-step-order="0">
+            <div class="num">1</div>
+            <div class="lbl">Plan</div>
+          </div>
+          <div class="agent-step" data-step-order="1">
+            <div class="num">2</div>
+            <div class="lbl">Decide</div>
+          </div>
+          <div class="agent-step" data-step-order="2">
+            <div class="num">3</div>
+            <div class="lbl">Act</div>
+          </div>
+        </div>
+
+        <aside class="notes">
+          Any ideas...? In simple words, An AI Agent is a system that can act on its own to achieve a goal. Unlike a regular chatbot that just answers questions, an AI Agent can: - Plan tasks - Make decisions - Take actions. Think of it like giving the AI a mission—and it figures out how to complete it, step by step, sometimes even adjusting along the way. For example: instead of sayin' what are the top rated steakhouses in Kraków? you would say to an agent: I'm at JDD 2026 ( he has to figure it out where it's taking place), and i would like to have a stake with a couple of friends. Look up top rated stakehoses around and book a reservation for today if they have available tables. And he will try to do just that.
+        </aside>
+      </section>
+
+      <section data-step-slide="harness">
+        <h2>From prompts to a <span class="accent">harness</span></h2>
+
+        <div class="harness-timeline-wrap">
+          <div class="harness-timeline-track">
+            <!-- Prompt Engineering: ~85% of 2022→2023 = 17% of full span -->
+            <div class="harness-milestone" style="left:17%" data-step-order="0">
+              <div class="harness-label">Prompt<br>Engineering</div>
+              <div class="harness-dot"></div>
+            </div>
+
+            <!-- Context Engineering: midpoint 2023→2024 = 37.5% of full span -->
+            <div class="harness-milestone" style="left:37.5%" data-step-order="1">
+              <div class="harness-label">Context<br>Engineering</div>
+              <div class="harness-dot"></div>
+            </div>
+
+            <!-- Harness Engineering: start of 2026 = 80% of full span -->
+            <div class="harness-milestone" style="left:80%" data-step-order="2">
+              <div class="harness-label">Harness<br>Engineering</div>
+              <div class="harness-dot"></div>
+            </div>
+          </div>
+
+          <div class="harness-timeline-years">
+            <span class="harness-yr">2022</span>
+            <span class="harness-yr">2023</span>
+            <span class="harness-yr">2024</span>
+            <span class="harness-yr">2025</span>
+            <span class="harness-yr hl">2026</span>
+            <span class="harness-yr">2027</span>
+          </div>
+        </div>
+
+        <div class="harness-eq" data-step-order="3">
+          <span class="eq-term">Agent</span>
+          <span class="eq-sign">=</span>
+          <span class="eq-term ghost">Model</span>
+          <span class="eq-sign accent">+</span>
+          <span class="eq-term ghost">Harness</span>
+        </div>
+        <p class="harness-def" data-step-order="3">
+          The software wrapped around the model — managing its environment, context, and external tool access so it can
+          actually act.
+        </p>
+        <aside class="notes">
+          Starting from 2022 till now there were 3 main changes in how we work with AI. As title says we went from writing prompts to building harnesses. Let me walk you through how we got here. It started with prompts. The idea was simple, you ask better, get better. For a while, that was the whole game. Then we learned the words weren't enough. The focus moved to context: larger memory, history, documents. Now the motto was: Feed it well, and it answers well. But even a smart model with good context has one limit: it can only talk. It can't act, check its work, or fix its own mistakes. That's why we're here now, at Harness Engineering. The harness is everything around the model, and provides: tools, memory, loops, permissions, checks, retries. Think of a car. The model is the engine; the harness is the rest of the vehicle — wheels, brakes, steering. A great engine on the ground goes nowhere; you'll need the whole car for that. This is the key idea. An agent is not just a model. An agent is a model plus a harness. Takeaway here is that the best model alone won't win, frontier models are starting to look alike anyway. The real difference now is the harness around them. The next wave of AI won't be about which model you pick. It'll be about how well you build or choose the harness around it.
+        </aside>
+      </section>
+
+      <section data-step-slide="arch-ai">
+        <h2>Software architectures <span class="accent">with AI</span></h2>
+        <div class="why-how">
+          <div class="box" data-step-order="0">
+            <h3>Why</h3>
+            <p>More data than rules-only systems can handle.</p>
+          </div>
+          <div class="box" data-step-order="1">
+            <h3>How</h3>
+            <p>LLMs in the stack—intent in, useful output out.</p>
+          </div>
+        </div>
+        <aside class="notes">
+          Now back to software arhitecture. AI agents are getting smarter and more useful, and everyone expects they’ll soon be used in production if not already. But WHY: One big reason for this shift is the huge amount of data we deal with today. Traditional software can’t keep up, but AI can learn and adapt, making it a much better tool for the job. HOW: The key to making this work is by interacticting with an LLM from our software. LLMs can understand what you mean and help create clear, useful text outputs.
+        </aside>
+      </section>
+
+      <section class="slide-diagram" data-step-slide="rag">
+        <h2><span class="accent">R</span>etrieval‑<span class="accent">A</span>ugmented <span
+            class="accent">G</span>eneration</h2>
+        <div class="diagram-wrap">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1490 500" font-family="Inter, -apple-system, system-ui, sans-serif">
+            <defs>
+              <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="3" stdDeviation="5" flood-opacity="0.1"/>
+              </filter>
+              <linearGradient id="grad-purple" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#a78bfa"/>
+                <stop offset="100%" stop-color="#7c3aed"/>
+              </linearGradient>
+              <linearGradient id="grad-green" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#4ade80"/>
+                <stop offset="100%" stop-color="#16a34a"/>
+              </linearGradient>
+              <linearGradient id="grad-blue" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#3b82f6"/>
+                <stop offset="100%" stop-color="#2563eb"/>
+              </linearGradient>
+              <linearGradient id="grad-teal" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#2dd4bf"/>
+                <stop offset="100%" stop-color="#0d9488"/>
+              </linearGradient>
+            </defs>
+
+            <!-- ══════════════ STEP 1: QUERY ══════════════ -->
+            <g data-step-order="0">
+              <g filter="url(#shadow)">
+                <rect x="40" y="60" width="300" height="380" rx="18" fill="#faf5ff" stroke="#7c3aed" stroke-width="2.5"/>
+              </g>
+              <circle cx="190" cy="170" r="60" fill="url(#grad-purple)"/>
+              <text x="190" y="190" text-anchor="middle" font-size="52" font-weight="800" fill="#fff">1</text>
+              <text x="190" y="295" text-anchor="middle" font-size="30" font-weight="800" fill="#4c1d95">Query</text>
+              <text x="190" y="345" text-anchor="middle" font-size="17" fill="#6d28d9">User asks a</text>
+              <text x="190" y="370" text-anchor="middle" font-size="17" fill="#6d28d9">question</text>
+            </g>
+
+            <!-- ══════════════ STEP 2: RETRIEVE (+ arrow 1→2) ══════════════ -->
+            <g data-step-order="1">
+              <!-- Arrow 1 → 2 -->
+              <path d="M350,246 L384,246 L384,240 L402,250 L384,260 L384,254 L350,254 Z" fill="#64748b"/>
+              <text x="376" y="232" text-anchor="middle" font-size="13" font-style="italic" fill="#94a3b8">question</text>
+              <g filter="url(#shadow)">
+                <rect x="410" y="60" width="300" height="380" rx="18" fill="#f0fdf4" stroke="#16a34a" stroke-width="2.5"/>
+              </g>
+              <circle cx="560" cy="170" r="60" fill="url(#grad-green)"/>
+              <text x="560" y="190" text-anchor="middle" font-size="52" font-weight="800" fill="#fff">2</text>
+              <text x="560" y="295" text-anchor="middle" font-size="30" font-weight="800" fill="#14532d">Retrieve</text>
+              <text x="560" y="345" text-anchor="middle" font-size="17" fill="#15803d">Find relevant docs</text>
+              <text x="560" y="370" text-anchor="middle" font-size="17" fill="#15803d">via vector search</text>
+            </g>
+
+            <!-- ══════════════ STEP 3: AUGMENT (+ arrow 2→3) ══════════════ -->
+            <g data-step-order="2">
+              <!-- Arrow 2 → 3 -->
+              <path d="M720,246 L754,246 L754,240 L772,250 L754,260 L754,254 L720,254 Z" fill="#64748b"/>
+              <text x="746" y="232" text-anchor="middle" font-size="13" font-style="italic" fill="#94a3b8">context</text>
+              <g filter="url(#shadow)">
+                <rect x="780" y="60" width="300" height="380" rx="18" fill="#eff6ff" stroke="#2563eb" stroke-width="2.5"/>
+              </g>
+              <circle cx="930" cy="170" r="60" fill="url(#grad-blue)"/>
+              <text x="930" y="190" text-anchor="middle" font-size="52" font-weight="800" fill="#fff">3</text>
+              <text x="930" y="295" text-anchor="middle" font-size="30" font-weight="800" fill="#1e40af">Augment</text>
+              <text x="930" y="345" text-anchor="middle" font-size="17" fill="#1d4ed8">Combine query with</text>
+              <text x="930" y="370" text-anchor="middle" font-size="17" fill="#1d4ed8">retrieved context</text>
+            </g>
+
+            <!-- ══════════════ STEP 4: GENERATE (+ arrow 3→4) ══════════════ -->
+            <g data-step-order="3">
+              <!-- Arrow 3 → 4 -->
+              <path d="M1090,246 L1124,246 L1124,240 L1142,250 L1124,260 L1124,254 L1090,254 Z" fill="#64748b"/>
+              <text x="1116" y="232" text-anchor="middle" font-size="13" font-style="italic" fill="#94a3b8">prompt</text>
+              <g filter="url(#shadow)">
+                <rect x="1150" y="60" width="300" height="380" rx="18" fill="#f0fdfa" stroke="#0d9488" stroke-width="2.5"/>
+              </g>
+              <circle cx="1300" cy="170" r="60" fill="url(#grad-teal)"/>
+              <text x="1300" y="190" text-anchor="middle" font-size="52" font-weight="800" fill="#fff">4</text>
+              <text x="1300" y="295" text-anchor="middle" font-size="30" font-weight="800" fill="#134e4a">Generate</text>
+              <text x="1300" y="345" text-anchor="middle" font-size="17" fill="#0f766e">LLM produces a</text>
+              <text x="1300" y="370" text-anchor="middle" font-size="17" fill="#0f766e">grounded answer</text>
+            </g>
+          </svg>
+        </div>
+        <aside class="notes">
+          Ok but, LLMs are not magical creatures, it won't solve any issues just by hooking them to your software. It needs help, and one way to help it is via RAGs ( which stangs for ...). You can think of it like any knowleadge sources which are outside of the llm, thay can be vectorised databases, apis, web searches etc. Not let's have an example: Imagine an smart AI companion inside a Mario game, not just one that's only hooked up to o standalone model. You are stuck in end game and you asks it a question: "How do I beat Bowser in the final castle?" Natural language, just like talking to a friend who just finished the game. The smart AI companian will look up into an external data source for Mario tips, (this is the RAG part) Next step is to build actual prompt. It takes the external infomation and combines them with your question. Best part now is that the the model will be less likely to halucinate anymore since it has factual informations from external sources. Lastly, the LLM will answer you back: "Dodge his fire breath, grab his tail when he charges, and throw him into the bombs behind him-three times to win."
+        </aside>
+      </section>
+
+      <section data-step-slide="rag-benefits">
+        <h2>RAG <span class="accent">benefits</span></h2>
+        <div class="benefit-chips">
+          <div class="chip" data-step-order="0">More relevant, factual outputs</div>
+          <div class="chip" data-step-order="1">Update knowledge without full retraining</div>
+          <div class="chip" data-step-order="2">Lower cost when designed with guardrails</div>
+        </div>
+        <aside class="notes">
+          Let's now brifly look on the benefits of RAG: More relevant, factual outputs — Answers come from your data which will make it less likely to halucinate. Update knowledge without retraining — The model stays the same, you just need to update the external source which should be much cheaper. Lower cost with guardrails.
+        </aside>
+      </section>
+
+      <section class="slide-diagram" data-step-slide="mcp">
+        <h2><span class="accent">MCP</span> — Model Context Protocol</h2>
+        <div class="diagram-wrap">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 50 1400 670" font-family="Inter, -apple-system, system-ui, sans-serif">
+            <defs>
+              <filter id="mcp-shadow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="3" stdDeviation="5" flood-opacity="0.1"/>
+              </filter>
+              <linearGradient id="mcp-grad-blue" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#3b82f6"/>
+                <stop offset="100%" stop-color="#2563eb"/>
+              </linearGradient>
+              <marker id="arr-orange" markerWidth="18" markerHeight="14" refX="17" refY="7" orient="auto" markerUnits="userSpaceOnUse">
+                <path d="M0,0 L18,7 L0,14 Z" fill="#ea580c"/>
+              </marker>
+              <marker id="arr-green" markerWidth="18" markerHeight="14" refX="17" refY="7" orient="auto" markerUnits="userSpaceOnUse">
+                <path d="M0,0 L18,7 L0,14 Z" fill="#16a34a"/>
+              </marker>
+              <marker id="arr-pink" markerWidth="18" markerHeight="14" refX="17" refY="7" orient="auto" markerUnits="userSpaceOnUse">
+                <path d="M0,0 L18,7 L0,14 Z" fill="#db2777"/>
+              </marker>
+              <marker id="arr-cyan" markerWidth="18" markerHeight="14" refX="17" refY="7" orient="auto" markerUnits="userSpaceOnUse">
+                <path d="M0,0 L18,7 L0,14 Z" fill="#0891b2"/>
+              </marker>
+              <marker id="arr-purple" markerWidth="18" markerHeight="14" refX="17" refY="7" orient="auto" markerUnits="userSpaceOnUse">
+                <path d="M0,0 L18,7 L0,14 Z" fill="#7c3aed"/>
+              </marker>
+            </defs>
+
+            <!-- ══════════════ ALWAYS VISIBLE: subtitle + divider ══════════════ -->
+            <text x="700" y="80" text-anchor="middle" font-size="14" fill="#64748b">From bespoke integrations to a universal connector</text>
+            <line x1="700" y1="100" x2="700" y2="668" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 6"/>
+
+            <!-- ══════════════ STEP 0: WITHOUT MCP — agent + tools ══════════════ -->
+            <g data-step-order="0">
+              <text x="350" y="128" text-anchor="middle" font-size="24" font-weight="800" fill="#dc2626" letter-spacing="-0.01em">Without MCP</text>
+              <text x="350" y="152" text-anchor="middle" font-size="13" fill="#64748b" font-style="italic">every platform, its own API</text>
+
+              <g filter="url(#mcp-shadow)">
+                <rect x="270" y="180" width="160" height="90" rx="14" fill="url(#mcp-grad-blue)" stroke="#1e3a8a" stroke-width="2"/>
+              </g>
+              <text x="350" y="218" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">AI Agent</text>
+              <text x="350" y="246" text-anchor="middle" font-size="12" fill="#dbeafe">your LLM app</text>
+
+              <g filter="url(#mcp-shadow)">
+                <rect x="35" y="460" width="150" height="100" rx="12" fill="#fff" stroke="#ea580c" stroke-width="2"/>
+              </g>
+              <text x="110" y="510" text-anchor="middle" font-size="20" font-weight="700" fill="#9a3412">Slack</text>
+              <text x="110" y="534" text-anchor="middle" font-size="11" fill="#64748b">team chat</text>
+
+              <g filter="url(#mcp-shadow)">
+                <rect x="195" y="460" width="150" height="100" rx="12" fill="#fff" stroke="#16a34a" stroke-width="2"/>
+              </g>
+              <text x="270" y="510" text-anchor="middle" font-size="20" font-weight="700" fill="#14532d">Drive</text>
+              <text x="270" y="534" text-anchor="middle" font-size="11" fill="#64748b">file storage</text>
+
+              <g filter="url(#mcp-shadow)">
+                <rect x="355" y="460" width="150" height="100" rx="12" fill="#fff" stroke="#db2777" stroke-width="2"/>
+              </g>
+              <text x="430" y="510" text-anchor="middle" font-size="20" font-weight="700" fill="#9d174d">GitHub</text>
+              <text x="430" y="534" text-anchor="middle" font-size="11" fill="#64748b">source code</text>
+
+              <g filter="url(#mcp-shadow)">
+                <rect x="515" y="460" width="150" height="100" rx="12" fill="#fff" stroke="#0891b2" stroke-width="2"/>
+              </g>
+              <text x="590" y="510" text-anchor="middle" font-size="20" font-weight="700" fill="#155e75">Jira</text>
+              <text x="590" y="534" text-anchor="middle" font-size="11" fill="#64748b">issue tracker</text>
+            </g>
+
+            <!-- ══════════════ STEP 0 (cont.): the N×M tangle ══════════════ -->
+            <g data-step-order="0">
+              <path class="mcp-flow" d="M340,270 L134,440" stroke="#ea580c" stroke-width="3" fill="none" marker-end="url(#arr-orange)" stroke-linecap="round"/>
+              <path class="mcp-flow" d="M345,270 L278,440" stroke="#16a34a" stroke-width="3" fill="none" marker-end="url(#arr-green)" stroke-linecap="round"/>
+              <path class="mcp-flow" d="M355,270 L422,440" stroke="#db2777" stroke-width="3" fill="none" marker-end="url(#arr-pink)" stroke-linecap="round"/>
+              <path class="mcp-flow" d="M360,270 L566,440" stroke="#0891b2" stroke-width="3" fill="none" marker-end="url(#arr-cyan)" stroke-linecap="round"/>
+
+              <g>
+                <rect x="50" y="448" width="120" height="22" rx="11" fill="#ea580c"/>
+                <text x="110" y="464" text-anchor="middle" font-size="10" font-weight="800" fill="#fff" letter-spacing="0.08em">SLACK WEB API</text>
+
+                <rect x="225" y="448" width="90" height="22" rx="11" fill="#16a34a"/>
+                <text x="270" y="464" text-anchor="middle" font-size="10" font-weight="800" fill="#fff" letter-spacing="0.08em">DRIVE REST</text>
+
+                <rect x="392" y="448" width="76" height="22" rx="11" fill="#db2777"/>
+                <text x="430" y="464" text-anchor="middle" font-size="10" font-weight="800" fill="#fff" letter-spacing="0.08em">GIT REST</text>
+
+                <rect x="548" y="448" width="84" height="22" rx="11" fill="#0891b2"/>
+                <text x="590" y="464" text-anchor="middle" font-size="10" font-weight="800" fill="#fff" letter-spacing="0.08em">JIRA REST</text>
+              </g>
+
+              <text x="350" y="625" text-anchor="middle" font-size="14" font-weight="700" fill="#dc2626">N apps × M tools = N×M connectors</text>
+              <text x="350" y="648" text-anchor="middle" font-size="12" fill="#64748b" font-style="italic">every new tool means a new bespoke integration</text>
+            </g>
+
+            <!-- ══════════════ STEP 1: WITH MCP — agent + protocol + servers ══════════════ -->
+            <g data-step-order="1">
+              <text x="1050" y="128" text-anchor="middle" font-size="24" font-weight="800" fill="#7c3aed" letter-spacing="-0.01em">With MCP</text>
+              <text x="1050" y="152" text-anchor="middle" font-size="13" fill="#64748b" font-style="italic">one protocol — Model Context Protocol</text>
+
+              <g filter="url(#mcp-shadow)">
+                <rect x="970" y="180" width="160" height="90" rx="14" fill="url(#mcp-grad-blue)" stroke="#1e3a8a" stroke-width="2"/>
+              </g>
+              <text x="1050" y="216" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">AI Agent</text>
+              <text x="1050" y="244" text-anchor="middle" font-size="12" fill="#dbeafe">MCP client</text>
+
+              <g filter="url(#mcp-shadow)">
+                <rect x="735" y="460" width="150" height="100" rx="12" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+              </g>
+              <rect x="765" y="448" width="90" height="22" rx="11" fill="#7c3aed"/>
+              <text x="810" y="464" text-anchor="middle" font-size="10" font-weight="800" fill="#fff" letter-spacing="0.08em">MCP SERVER</text>
+              <text x="810" y="514" text-anchor="middle" font-size="20" font-weight="700" fill="#334155">Slack</text>
+              <text x="810" y="538" text-anchor="middle" font-size="11" fill="#64748b">team chat</text>
+
+              <g filter="url(#mcp-shadow)">
+                <rect x="895" y="460" width="150" height="100" rx="12" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+              </g>
+              <rect x="925" y="448" width="90" height="22" rx="11" fill="#7c3aed"/>
+              <text x="970" y="464" text-anchor="middle" font-size="10" font-weight="800" fill="#fff" letter-spacing="0.08em">MCP SERVER</text>
+              <text x="970" y="514" text-anchor="middle" font-size="20" font-weight="700" fill="#334155">Drive</text>
+              <text x="970" y="538" text-anchor="middle" font-size="11" fill="#64748b">file storage</text>
+
+              <g filter="url(#mcp-shadow)">
+                <rect x="1055" y="460" width="150" height="100" rx="12" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+              </g>
+              <rect x="1085" y="448" width="90" height="22" rx="11" fill="#7c3aed"/>
+              <text x="1130" y="464" text-anchor="middle" font-size="10" font-weight="800" fill="#fff" letter-spacing="0.08em">MCP SERVER</text>
+              <text x="1130" y="514" text-anchor="middle" font-size="20" font-weight="700" fill="#334155">GitHub</text>
+              <text x="1130" y="538" text-anchor="middle" font-size="11" fill="#64748b">source code</text>
+
+              <g filter="url(#mcp-shadow)">
+                <rect x="1215" y="460" width="150" height="100" rx="12" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+              </g>
+              <rect x="1245" y="448" width="90" height="22" rx="11" fill="#7c3aed"/>
+              <text x="1290" y="464" text-anchor="middle" font-size="10" font-weight="800" fill="#fff" letter-spacing="0.08em">MCP SERVER</text>
+              <text x="1290" y="514" text-anchor="middle" font-size="20" font-weight="700" fill="#334155">Jira</text>
+              <text x="1290" y="538" text-anchor="middle" font-size="11" fill="#64748b">issue tracker</text>
+            </g>
+
+            <!-- ══════════════ STEP 1 (cont.): one protocol fans out ══════════════ -->
+            <g data-step-order="1">
+              <path class="mcp-flow" d="M1050,270 L1050,358 L810,358 L810,438" stroke="#7c3aed" stroke-width="3.2" fill="none" marker-end="url(#arr-purple)" stroke-linecap="round"/>
+              <path class="mcp-flow" d="M1050,270 L1050,378 L970,378 L970,438" stroke="#7c3aed" stroke-width="3.2" fill="none" marker-end="url(#arr-purple)" stroke-linecap="round"/>
+              <path class="mcp-flow" d="M1050,270 L1050,378 L1130,378 L1130,438" stroke="#7c3aed" stroke-width="3.2" fill="none" marker-end="url(#arr-purple)" stroke-linecap="round"/>
+              <path class="mcp-flow" d="M1050,270 L1050,358 L1290,358 L1290,438" stroke="#7c3aed" stroke-width="3.2" fill="none" marker-end="url(#arr-purple)" stroke-linecap="round"/>
+
+              <text x="1050" y="625" text-anchor="middle" font-size="14" font-weight="700" fill="#7c3aed">Speak MCP once · plug into any tool</text>
+              <text x="1050" y="648" text-anchor="middle" font-size="12" fill="#64748b" font-style="italic">each tool ships an MCP server — your app never changes</text>
+            </g>
+          </svg>
+        </div>
+        <aside class="notes">
+          Quick show of hands — anyone here know MCP? What is it, or what's it used for? MCP — the Model Context Protocol — is an open standard that lets an AI agent talk to external tools in one consistent way. Think of it like USB-C for AI: instead of a custom cable for every device, one connector fits them all. On the left side: Without MCP, you will have to write code for each new integration that you agent needs, which will become messy eventually. On the right, MCP simplifies the model. Your agent needs to have a MCP client and each tool ships needs to provide a MCP server. Adding a new tool goes from "build a custom integration" to "plug in another server", no need to change your application.
+
+          Now that you master the basics, I’ll let Razvan to present you one real world scenario.
+        </aside>
+      </section>
+
+      <section class="statement-slide">
+        <p class="statement-emoji">💬</p>
+        <h2 class="statement-title">Real-world <span class="accent">scenario</span></h2>
+        <div class="accent-line"></div>
+        <aside class="notes">
+          Picture a scenario anyone who has helped run a conference knows well. It's the week before JDD, and the questions start pouring into the conference app's chat — and during the event they never stop. "Which talks cover virtual threads?" "Is there anything on Valhalla, and which room is it in?" "Does it clash with the event-driven architecture talk?" The answers exist, but they're scattered across the agenda, the speakers' abstracts and the attendee wiki. The organisers are busy running a conference for hundreds of people, and every reply means digging through all of it again. You're a developer and an AI enthusiast, so naturally your mind goes straight to automation. And conveniently, you just heard from us that AI agent creation is exactly where things are heading.
+        </aside>
+      </section>
+
+      <section class="slide-diagram">
+        <h2>Naive solution</h2>
+        <div class="diagram-wrap">
+          <img src="presentation/diagram-naive.svg" alt="">
+        </div>
+        <aside class="notes">
+          So you grab a pen and paper, or open a sketching app, and start designing the solution. You decide that a chatbot in the conference app will forward attendee questions through a gateway straight into your Chatbot App. The conference team keeps everything in a wiki — the full agenda, every speaker's abstract and bio, the venue and practical info — so you have enough data to answer almost any attendee question. You load all of it into memory to serve it to the model. Quick disclaimer — this is an oversimplified example. In reality, the wiki data would also go through a gateway, and loading it into memory on every request isn't ideal. But bear with us. Once you realize you just need a solid prompt, you bundle the whole wiki and the attendee's question together into the context, send the request, and forward the LLM's response back to the app.
+        </aside>
+      </section>
+
+      <section data-bc-slide="naive">
+        <h2><span class="accent">Benefits</span> <span class="muted">&amp;</span> challenges</h2>
+        <div class="bc-compare">
+          <div class="col-h ben">Benefits</div>
+          <div class="col-h ch">Challenges</div>
+          <div class="bc-card ben" data-step-order="0">Processing a large amount of data in one shot</div>
+          <div class="bc-card ch" data-step-order="1">Exceeding the LLM's maximum context window</div>
+          <div class="bc-card ben" data-step-order="2">Fast time to market</div>
+          <div class="bc-card ch" data-step-order="3">Cost of usage - every request is forwarded to the LLM</div>
+          <div class="bc-card ben" data-step-order="4">Leveraging prompt engineering</div>
+          <div class="bc-card ch" data-step-order="5">Hallucinations - most of the wiki context is unrelated</div>
+        </div>
+        <aside class="notes">
+          Now let's see what we have achieved so far. We managed to process a lot of data at once, so there is no need for us to search the agenda for every talk that mentions virtual threads. However, two days of talks, abstracts and bios might exceed the maximum context window of any available LLM. Creating this simple solution guarantees us a fast time to market, but every question is forwarded to the LLM. Naturally, the costs will explode the moment a few hundred attendees open the app during the morning coffee break. To get a focused answer, we'll use our prompt engineering skills. Unfortunately, with this amount of data — most of it unrelated to virtual threads — we'll get hallucinations: a talk in the wrong room, at the wrong time, or a session that doesn't exist at all.
+        </aside>
+      </section>
+
+      <section class="slide-diagram">
+        <h2>RAG with <span class="accent">semantic caching</span></h2>
+        <div class="diagram-wrap">
+          <img src="presentation/diagram-rag-cache.svg" alt="">
+        </div>
+        <aside class="notes">
+          We go back to the drawing board and remember that we heard from Adi about RAG systems. To obtain a better context for the prompt, we decide to implement semantic search. We take all the wiki pages — agenda, abstracts, speaker bios — and run them through a document vectorization application (there are many third-party apps capable of performing this task), then store the data in a vector database. Remember that this is an overly simplified example. If we wanted the database in sync with every agenda change — a talk moved to another room, a speaker who cancelled — we would need some kind of triggers to reprocess the data, but this is a discussion for another time. Having the data in a vector database lets us take the attendee's question and search by semantic similarity: for "talks on virtual threads?" we retrieve the virtual threads session and the abstracts closest in meaning, not the whole agenda. We then use the returned data alongside the question as context for the LLM, and return the response to the conference app.
+        </aside>
+      </section>
+
+      <section data-bc-slide="rag-cache">
+        <h2><span class="accent">Benefits</span> <span class="muted">&amp;</span> challenges</h2>
+        <div class="bc-compare">
+          <div class="col-h ben">Benefits</div>
+          <div class="col-h ch">Challenges</div>
+          <div class="bc-card ben" data-step-order="0">Enhancing prompts with specific, focused context</div>
+          <div class="bc-card ch" data-step-order="1">Relying on a 3rd-party vectorization solution</div>
+          <div class="bc-card ben" data-step-order="2">Fast specific data retrieval from the vector DB</div>
+          <div class="bc-card ch" data-step-order="3">Additional data storage costs</div>
+          <div class="bc-card ben" data-step-order="4">Reduces the frequency of model retraining</div>
+          <div class="bc-card ch" data-step-order="5">More complex architecture</div>
+        </div>
+        <aside class="notes">
+          Let's see how we improved the system. We managed to enhance the prompts with focused and specific data, but to create the vectors we have to rely on third-party solutions, which might be expensive or inaccurate depending on the solution. We now retrieve only the agenda and wiki chunks related to the question, and quickly, thanks to the database's capabilities — but we introduced a new component in our system: an external storage. Because we only send the data related to the question, we rely less on the model's own knowledge and it hallucinates less — no more invented talks. But we complicated the architecture a bit, and the costs haven't improved yet. So what do we do? We know that we are good engineers, and we gained some confidence to go back to the drawing board once again.
+        </aside>
+      </section>
+
+      <section class="slide-diagram">
+        <h2>RAG with semantic cache &amp; <span class="accent">chat history</span></h2>
+        <div class="diagram-wrap">
+          <img src="presentation/diagram-chat-history.svg" alt="">
+        </div>
+        <aside class="notes">
+          Now we layer chat history on top of the semantic search from the previous iteration. The goal is still to cut LLM cost — and at a conference, questions come in waves: right after the keynote, dozens of people ask about the virtual threads talk in slightly different words. When a question arrives, we first search a vector database of past question-and-answer pairs. If the similarity is above our threshold, we return the cached answer and skip the LLM entirely. Only on a miss do we fall back to the wiki RAG path: vector-search the wiki, build a rich prompt with the retrieved context, call the LLM, then vectorize and store the new Q+A pair in chat history before responding. The Chatbot App in this diagram orchestrates both the cache lookup and the retrieval path — we pay the LLM only when no past answer fits.
+        </aside>
+      </section>
+
+      <section data-bc-slide="rag">
+        <h2><span class="accent">Benefits</span> <span class="muted">&</span> challenges</h2>
+        <div class="bc-compare">
+          <div class="col-h ben">Benefits</div>
+          <div class="col-h ch">Challenges</div>
+          <div class="bc-card ben" data-step-order="0">Reduced cost of LLM requests</div>
+          <div class="bc-card ch" data-step-order="1">Must fine-tune the similarity threshold or return partial answers
+          </div>
+          <div class="bc-card ben" data-step-order="2">Faster responses when the cache hits - a DB search beats an LLM
+            round-trip</div>
+          <div class="bc-card ch" data-step-order="3">Outdated responses when wiki data changes - needs a sync mechanism
+          </div>
+          <div class="bc-card ben" data-step-order="4">Fault tolerance - history can answer when the LLM is unavailable
+          </div>
+          <div class="bc-card ch" data-step-order="5">Overall complexity increased again</div>
+        </div>
+        <aside class="notes">
+          Now let's see how far we got with our third iteration. We achieved what we proposed in the first place: reducing the cost of the LLM requests. However, we have to carefully fine-tune the similarity threshold — "talks on virtual threads" and "talks on virtual machines" are close in wording but not in meaning — or we return partial or wrong answers. We also improved the response time, as the fastest response now comes from a database search. However, we might face another issue now: outdated responses. If a talk moves to another room or a speaker cancels, the cached answers are wrong, and an attendee walks into the wrong room — so we would need a synchronization mechanism to keep the history valid. Lastly, we introduced an additional layer of fault tolerance: if the LLM is unable to respond, we can rely solely on the history stored in the chat history database. But as we have already seen, we increased the overall complexity of the solution even more, and I'll stop with this third iteration because the fourth one will probably require two slides just for the drawing.
+        </aside>
+      </section>
+
+      <section class="slide-diagram">
+        <h2><span class="accent">Agentic</span> orchestration</h2>
+        <div class="diagram-wrap">
+          <img src="presentation/diagram-orchestrator.svg" alt="Agentic orchestration: application, gateway, orchestrator agent with its harness, LLM, MCP servers, databases and Grafana">
+        </div>
+        <aside class="notes">
+          With this fourth iteration, we shift from a proof-of-concept approach to something that actually resembles production architecture. We wire up all our designated systems to an orchestration agent using the MCP communication pattern Adi walked us through — and now the agent is the one deciding which tool to call and what to do with the results. A question about the agenda? It asks the conference info server, with the right filters. A speaker's background? It checks the knowledge base via RAG. "What's new in the latest Spring AI release?" isn't in our data at all, so it falls back to web search. The agent figures that out on its own. Around the model sits the harness from the beginning of the talk: conversation memory and an audit trail in a database, guardrails and budgets on every loop — and because every decision is now a tool call, we can finally observe it: tokens, cost, latency and cache hits, live in Grafana.
+        </aside>
+      </section>
+
+      <section data-bc-slide="agentic">
+        <h2><span class="accent">Benefits</span> <span class="muted">&</span> challenges</h2>
+        <div class="bc-compare">
+          <div class="col-h ben">Benefits</div>
+          <div class="col-h ch">Challenges</div>
+          <div class="bc-card ben" data-step-order="0">Fewer partial / outdated answers - live tools, fresh cache only</div>
+          <div class="bc-card ch" data-step-order="1">Slower and pricier - several LLM round trips per answer</div>
+          <div class="bc-card ben" data-step-order="2">Modular - swap an MCP server or the LLM independently</div>
+          <div class="bc-card ch" data-step-order="3">Non-deterministic - the model needs a harness</div>
+          <div class="bc-card ben" data-step-order="4">Fault tolerant &amp; observable - every tool call traced</div>
+          <div class="bc-card ch" data-step-order="5">More moving parts to deploy and keep available</div>
+        </div>
+        <aside class="notes">
+          Compared with the previous iteration, partial and outdated answers become much rarer. On a cache miss the agent goes to the live tools and combines them — schedule, wiki, web — and the harness only serves a cached answer above a strict similarity threshold and while it is still fresh. The modularity win is real: every capability is an MCP server, so we can add or swap one — or even swap the LLM — without touching the rest. And we get fault tolerance and visibility: web search as a fallback, graceful degradation when a server is down, and because every decision is now a tool call, we can finally trace it.
+
+          The price? Every answer now takes several round trips to the LLM, and every round re-sends the tool definitions and results — so an uncached answer is slower and more expensive than before. The model is also non-deterministic: it can pick the wrong tool, guess a filter, or answer from memory. That is exactly why we wrap it in a harness — budgets, guardrails, a grounding check. And there are more moving parts to deploy, monitor and keep available: MCP servers, databases, observability. You'll see every one of these in the demo.
+        </aside>
+      </section>
+
+      <section class="demo-slide statement-slide">
+        <p class="demo-emoji">⚡</p>
+        <h2 class="demo-title">DEMO</h2>
+        <div class="accent-line"></div>
+        <aside class="notes">
+          Alright, enough theory. The best way to make all of this click is through actual code, so I'll hand it over to Adi — who will walk us through how it all works in practice, in the language we all know and love: Java. Everything runs locally: a Spring AI agent on a local LLM, four MCP servers, Postgres and Grafana. The run sheet with the questions is in docs/demo-script.md.
+        </aside>
+      </section>
+
+      <section class="statement-slide statement-ai">
+        <p class="statement-emoji">✨</p>
+        <h2 class="statement-title">This presentation was made with <span class="accent">AI</span></h2>
+        <div class="accent-line"></div>
+        <aside class="notes">
+          Now that we've seen a real-world AI agent in action, we can finally answer the question we started with. Yes — AI is here to stay. It's already becoming an integral part of how we build software, and that's only going to deepen as models get better at processing large amounts of data and acting on the results. And if you needed one last proof of that — this presentation was built with the help of AI.
+        </aside>
+      </section>
+
+      <section class="thank-slide statement-slide">
+        <h2 class="thank-title">Thank you</h2>
+        <span class="thank-connect">LET'S CONNECT</span>
+        <div class="accent-line"></div>
+        <div class="thank-grid">
+          <div class="thank-person">
+            <img class="qr" src="presentation/assets/qr-razvan.png?v=3" alt="QR code Razvan Balasa" width="200"
+              height="200">
+            <div class="name">Razvan</div>
+          </div>
+          <div class="thank-person">
+            <img class="qr" src="presentation/assets/qr-adrian.png?v=3" alt="QR code Adrian Coman" width="200"
+              height="200">
+            <div class="name">Adrian</div>
+          </div>
+        </div>
+        <aside class="notes">
+          Thank you!
+        </aside>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      slideNumber: true,
+      width: 1280,
+      height: 720,
+      margin: 0.08,
+      transition: 'none',
+      transitionSpeed: 'fast',
+      plugins: [RevealNotes],
+      backgroundTransition: 'none',
+      center: true,
+      touch: true,
+      mouseWheel: true,
+      overview: true
+    }).then(function () {
+      var stepState = {};
+      var SHOW_ALL = /[?&]show-all\b/.test(window.location.search);
+      if (SHOW_ALL) {
+        document.body.classList.add('show-all');
+      }
+
+      function slideKey(slide) {
+        return slide.getAttribute('data-step-slide') || slide.getAttribute('data-bc-slide');
+      }
+
+      function resetStepSlide(slide) {
+        if (SHOW_ALL) {
+          slide.querySelectorAll('[data-step-order]').forEach(function (el) {
+            el.classList.add('revealed');
+          });
+          slide.querySelectorAll('.flow-arrow[data-after-step]').forEach(function (el) {
+            el.classList.add('revealed');
+          });
+          return;
+        }
+        var key = slideKey(slide);
+        if (!key) return;
+        stepState[key] = -1;
+        slide.querySelectorAll('[data-step-order]').forEach(function (el) {
+          el.classList.remove('revealed');
+        });
+        slide.querySelectorAll('.flow-arrow[data-after-step]').forEach(function (el) {
+          el.classList.remove('revealed');
+        });
+      }
+
+      function maxStepOnSlide(slide) {
+        var max = -1;
+        slide.querySelectorAll('[data-step-order]').forEach(function (el) {
+          max = Math.max(max, +el.getAttribute('data-step-order'));
+        });
+        return max;
+      }
+
+      function applyStepReveal(slide, maxStep) {
+        slide.querySelectorAll('[data-step-order]').forEach(function (el) {
+          el.classList.toggle('revealed', +el.getAttribute('data-step-order') <= maxStep);
+        });
+        slide.querySelectorAll('.flow-arrow[data-after-step]').forEach(function (el) {
+          el.classList.toggle('revealed', +el.getAttribute('data-after-step') < maxStep);
+        });
+      }
+
+      function advanceStepSlide(slide) {
+        var key = slideKey(slide);
+        if (!key) return false;
+        var max = maxStepOnSlide(slide);
+        var cur = stepState[key] !== undefined ? stepState[key] : -1;
+        if (cur >= max) return false;
+        cur++;
+        stepState[key] = cur;
+        applyStepReveal(slide, cur);
+        return true;
+      }
+
+      function regressStepSlide(slide) {
+        var key = slideKey(slide);
+        if (!key) return false;
+        var cur = stepState[key] !== undefined ? stepState[key] : -1;
+        if (cur < 0) return false;
+        cur--;
+        stepState[key] = cur;
+        applyStepReveal(slide, cur);
+        return true;
+      }
+
+      function showAllStepsOnSlide(slide) {
+        if (SHOW_ALL) return;
+        var key = slideKey(slide);
+        if (!key) return;
+        var max = maxStepOnSlide(slide);
+        stepState[key] = max;
+        applyStepReveal(slide, max);
+      }
+
+      function boostSpeakerNotes() {
+        document.querySelectorAll('.speaker-notes-text, .notes-inner, .reveal-speaker-notes-window .speaker-controls-notes').forEach(function (el) {
+          el.style.fontSize = '1.75rem';
+          el.style.lineHeight = '1.55';
+        });
+      }
+
+      Reveal.on('slidechanged', function (e) {
+        var prevIndices = e.previousSlide ? Reveal.getIndices(e.previousSlide) : null;
+        var navigatingBackward = prevIndices && (
+          prevIndices.h > e.indexh ||
+          (prevIndices.h === e.indexh && prevIndices.v > e.indexv)
+        );
+        if (navigatingBackward) {
+          showAllStepsOnSlide(e.currentSlide);
+        } else {
+          resetStepSlide(e.currentSlide);
+        }
+        if (e.previousSlide) resetStepSlide(e.previousSlide);
+        boostSpeakerNotes();
+      });
+      Reveal.on('ready', function () {
+        document.querySelectorAll('[data-step-slide],[data-bc-slide]').forEach(resetStepSlide);
+        boostSpeakerNotes();
+        setInterval(boostSpeakerNotes, 1000);
+      });
+      document.addEventListener('keydown', function (ev) {
+        var slide = Reveal.getCurrentSlide();
+        if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp' || ev.key === 'PageUp') {
+          if (regressStepSlide(slide)) {
+            ev.stopImmediatePropagation();
+            ev.preventDefault();
+          }
+          return;
+        }
+        if (ev.key !== 'ArrowRight' && ev.key !== 'ArrowDown' && ev.key !== ' ' && ev.key !== 'PageDown') return;
+        if (advanceStepSlide(slide)) {
+          ev.stopImmediatePropagation();
+          ev.preventDefault();
+        }
+      }, true);
+    });
+  </script>
+</body>
+
+</html>

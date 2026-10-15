@@ -1,0 +1,7 @@
+.banner {
+  padding: var(--space-2) var(--space-5);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: var(--text-sm);
+  border-bottom: 1px solid color-mix(in srgb, var(--danger) 25%, transparent);
+}

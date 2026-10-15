@@ -1,0 +1,63 @@
+.body {
+  font-size: var(--text-lg);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.body > :first-child {
+  margin-top: 0;
+}
+
+.body > :last-child {
+  margin-bottom: 0;
+}
+
+.body p {
+  margin: 0 0 var(--space-3);
+}
+
+.body ul,
+.body ol {
+  margin: 0 0 var(--space-3);
+  padding-left: var(--space-5);
+}
+
+.body li {
+  margin-bottom: var(--space-1);
+}
+
+.body code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: var(--surface-hover);
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
+}
+
+.body pre {
+  background: var(--surface-sunken);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+}
+
+.body pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.body table {
+  border-collapse: collapse;
+  font-size: var(--text-md);
+}
+
+.body th,
+.body td {
+  border: 1px solid var(--hairline);
+  padding: var(--space-1) var(--space-2);
+  text-align: left;
+}
+
+.body a {
+  color: var(--accent);
+}

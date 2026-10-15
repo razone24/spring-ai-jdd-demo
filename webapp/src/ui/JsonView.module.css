@@ -1,0 +1,26 @@
+.json {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: 1.65;
+  color: var(--text);
+  overflow-x: auto;
+  tab-size: 2;
+}
+
+.key {
+  color: var(--json-key);
+}
+
+.string {
+  color: var(--json-string);
+}
+
+.number {
+  color: var(--json-number);
+}
+
+.literal {
+  color: var(--json-null);
+}

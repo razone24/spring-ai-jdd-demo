@@ -1,0 +1,7 @@
+.cancelled {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-md);
+  color: var(--text-faint);
+}
