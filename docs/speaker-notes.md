@@ -94,3 +94,7 @@ Now that we've seen a real-world AI agent in action, we can finally answer the q
 ## Slide 22 — Thank you
 
 Thank you!
+
+## Slide 23 — Rate our presentation!
+
+Please take a moment to rate our presentation — scan the QR code. Thank you!

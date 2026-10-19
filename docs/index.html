@@ -689,13 +689,45 @@
       border: 2px solid #bfdbfe;
     }
 
+    .thank-layout {
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      gap: 56px;
+      margin-top: 32px;
+    }
+
+    .thank-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .thank-divider {
+      width: 2px;
+      background: var(--border);
+      margin-top: 64px;
+    }
+
     .thank-grid {
       display: flex;
-      gap: 72px;
+      gap: 40px;
       justify-content: center;
       align-items: flex-start;
-      margin-top: 36px;
-      flex-wrap: wrap;
+      margin-top: 24px;
+    }
+
+    .thank-code {
+      margin-top: 24px;
+    }
+
+    .rating-card {
+      margin-top: 12px;
+    }
+
+    .thank-person.rating-card img.qr {
+      width: 280px;
+      height: 280px;
     }
 
     .thank-person {
@@ -1291,8 +1323,10 @@
 
       <section class="thank-slide statement-slide">
         <h2 class="thank-title">Thank you</h2>
-        <span class="thank-connect">LET'S CONNECT</span>
         <div class="accent-line"></div>
+        <div class="thank-layout">
+        <div class="thank-group">
+        <span class="thank-connect">LET'S CONNECT</span>
         <div class="thank-grid">
           <div class="thank-person">
             <img class="qr" src="presentation/assets/qr-razvan.png?v=3" alt="QR code Razvan Balasa" width="200"
@@ -1305,8 +1339,33 @@
             <div class="name">Adrian</div>
           </div>
         </div>
+        </div>
+        <div class="thank-divider"></div>
+        <div class="thank-group">
+          <span class="thank-connect">SOURCE CODE</span>
+          <div class="thank-person thank-code">
+            <img class="qr" src="presentation/assets/qr-github%E2%80%93jdd.png?v=1" alt="QR code for the demo repository on GitHub"
+              width="200" height="200">
+            <div class="name">Project</div>
+          </div>
+        </div>
+        </div>
         <aside class="notes">
           Thank you!
+        </aside>
+      </section>
+
+      <section class="thank-slide statement-slide">
+        <h2 class="thank-title">Rate our presentation!</h2>
+        <div class="accent-line"></div>
+        <div class="thank-layout">
+          <div class="thank-person rating-card">
+            <img class="qr" src="presentation/assets/qr-rating.png?v=1" alt="QR code to rate the presentation"
+              width="280" height="280">
+          </div>
+        </div>
+        <aside class="notes">
+          Please take a moment to rate our presentation — scan the QR code. Thank you!
         </aside>
       </section>
 
