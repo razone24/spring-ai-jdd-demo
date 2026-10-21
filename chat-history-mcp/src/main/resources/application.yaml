@@ -14,7 +14,6 @@ spring:
       server:
         name: chat-history-mcp
         version: 1.0.0
-        # Stateless Streamable HTTP: no server-side session, so instances can restart or scale out freely.
         protocol: STATELESS
         instructions: Semantic cache of previously answered questions.
     model:
@@ -32,7 +31,6 @@ spring:
         metadata-mode: none
         options:
           model: ${llm.embedding-models.openai}
-          # Same width as nomic-embed-text, so both providers share one table shape.
           dimensions: 768
     ollama:
       base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
@@ -44,7 +42,6 @@ spring:
           include: false
     vectorstore:
       pgvector:
-        # One table per provider: vectors from different embedding models never meet.
         table-name: chat_history_${llm.provider:openai}
         dimensions: ${EMBEDDING_DIMENSIONS:768}
         initialize-schema: true
@@ -54,12 +51,9 @@ llm:
     ollama: ${OLLAMA_EMBEDDING_MODEL:nomic-embed-text}
   embedding-model: ${llm.embedding-models.${llm.provider:openai}}
 chat-history:
-  # Floor for returning candidates (with their scores). Whether a candidate is good enough to answer
-  # from is the agent's decision (assistant.cache.hit-threshold), so the trace shows near-misses too.
-  # Scores differ per embedding model, so the floor does too.
   similarity-thresholds:
     openai: 0.4
-    ollama: 0.5
+    ollama: 0.4
   similarity-threshold: ${CHAT_HISTORY_SIMILARITY_THRESHOLD:${chat-history.similarity-thresholds.${llm.provider:openai}}}
 management:
   endpoints:
