@@ -24,8 +24,9 @@ public class GroundingAdvisor implements CallAdvisor {
     static final String LOOK_IT_UP = """
 
             (Assistant harness: your previous draft was discarded because it was not based on a tool result \
-            from this turn. Call the tool that holds these facts first, then answer from its result. If no tool \
-            can help, say so or call refuse.)""";
+            from this turn. Call the tool that holds these facts first, then answer from its result. If the \
+            message is only a greeting, thanks or small talk, reply to it again without tools. If no tool can \
+            help, say so or call refuse.)""";
 
     @Override
     public ChatClientResponse adviseCall(ChatClientRequest request, CallAdvisorChain chain) {

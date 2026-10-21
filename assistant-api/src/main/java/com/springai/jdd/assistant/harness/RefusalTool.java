@@ -21,8 +21,8 @@ public class RefusalTool {
                                          + "conference or software engineering — creative writing, personal advice, "
                                          + "politics, sports, cooking, trivia. Practical attendee questions (Wi-Fi "
                                          + "password, food, travel, tickets) are in scope — never refuse those. "
-                                         + "UNINTELLIGIBLE: the text forms no question at all — random symbols or "
-                                         + "fragments.";
+                                         + "UNINTELLIGIBLE: gibberish with no meaning — random symbols or letters. "
+                                         + "Greetings, thanks and small talk are not refusals — just reply to them.";
 
     private final Refusal refusal;
 
