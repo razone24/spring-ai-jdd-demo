@@ -18,6 +18,7 @@ type WireToolCall = {
   result_preview?: string;
   duration_ms?: number;
   error?: string;
+  round?: number;
 };
 
 type WireMeta = {
@@ -62,6 +63,7 @@ function decodeToolCall(wire: WireToolCall): ToolCall {
     resultPreview: wire.result_preview ?? null,
     durationMs: wire.duration_ms ?? 0,
     error: wire.error ?? null,
+    round: wire.round ?? 0,
   };
 }
 

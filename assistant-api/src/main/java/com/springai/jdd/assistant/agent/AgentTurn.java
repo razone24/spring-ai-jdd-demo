@@ -59,6 +59,7 @@ public class AgentTurn {
 
     public void spendRound() {
         rounds.spendRound();
+        trail.enterRound(rounds.rounds());
     }
 
     public void countTokens(ChatResponse response) {

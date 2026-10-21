@@ -171,6 +171,36 @@ class OrchestratorAgentTest {
     }
 
     @Test
+    void shouldStampEveryCallWithTheModelRoundItRanIn() {
+        AssistantMessage twoLookups = AssistantMessage.builder()
+                                                      .content("")
+                                                      .toolCalls(List.of(
+                                                              new AssistantMessage.ToolCall("call-1", "function",
+                                                                                            SCHEDULE_TOOL, NO_ARGUMENTS),
+                                                              new AssistantMessage.ToolCall("call-2", "function",
+                                                                                            SCHEDULE_TOOL, NO_ARGUMENTS)))
+                                                      .build();
+        when(chatModel.call(any(Prompt.class))).thenReturn(new ChatResponse(List.of(new Generation(twoLookups))),
+                                                          textResponse(ANSWER));
+        when(cache.lookup(anyString(), any())).thenAnswer(invocation -> {
+            invocation.<ToolTrail>getArgument(1).record(harnessCall("searchChatHistory"));
+            return Optional.empty();
+        });
+        doAnswer(invocation -> {
+            invocation.<ToolTrail>getArgument(2).record(harnessCall("recordChatHistory"));
+            return null;
+        }).when(cache).store(any(), any(), any());
+
+        QueryOutcome outcome = orchestrator.answer(PROMPT, CONVERSATION_ID);
+
+        assertThat(outcome.calls()).extracting(ToolCall::name, ToolCall::round)
+                                   .containsExactly(Tuple.tuple("searchChatHistory", 0),
+                                                    Tuple.tuple(SCHEDULE_TOOL, 1),
+                                                    Tuple.tuple(SCHEDULE_TOOL, 1),
+                                                    Tuple.tuple("recordChatHistory", 2));
+    }
+
+    @Test
     void shouldNeverShowOrCacheAnEmptyAnswer() {
         when(chatModel.call(any(Prompt.class))).thenReturn(toolCallResponse(SCHEDULE_TOOL, NO_ARGUMENTS),
                                                           textResponse(""));
@@ -403,6 +433,10 @@ class OrchestratorAgentTest {
                                                                                                     name, arguments)))
                                                    .build();
         return new ChatResponse(List.of(new Generation(message)));
+    }
+
+    private static ToolCall harnessCall(String name) {
+        return ToolCall.builder().name(name).origin(ToolOrigin.HARNESS).build();
     }
 
     private ChatResponse textResponse(String text) {
