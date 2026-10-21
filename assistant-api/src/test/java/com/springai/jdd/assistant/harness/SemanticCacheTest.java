@@ -98,7 +98,7 @@ class SemanticCacheTest {
 
     @Test
     void shouldDoNothingWhenDisabled() {
-        SemanticCache disabled = new SemanticCache(toolset, new ObjectMapper(), new CacheProperties(false, 0.9, null, Set.of()), clock);
+        SemanticCache disabled = new SemanticCache(toolset, new ObjectMapper(), new CacheProperties(false, 0.9, null, Set.of(), false), clock);
 
         assertThat(disabled.lookup(QUESTION, trail)).isEmpty();
         disabled.store(QUESTION, "answer", trail);
@@ -107,6 +107,6 @@ class SemanticCacheTest {
 
     private SemanticCache cacheWithThreshold(double threshold) {
         return new SemanticCache(toolset, new ObjectMapper(), new CacheProperties(true, threshold, Duration.ofHours(24),
-                                                                           Set.of("searchWeb")), clock);
+                                                                           Set.of("searchWeb"), false), clock);
     }
 }

@@ -76,7 +76,7 @@ assistant:
     hit-threshold: ${ASSISTANT_CACHE_HIT_THRESHOLD:${assistant.cache-hit-thresholds.${llm.provider:openai}}}
     max-age: ${ASSISTANT_CACHE_MAX_AGE:24h}
     uncacheable-tools: searchWeb
-  # Similarity scores differ per embedding model, so the default cache-hit bar does too.
+    rewrite-follow-ups: ${ASSISTANT_CACHE_REWRITE_FOLLOW_UPS:true}
   cache-hit-thresholds:
     openai: 0.8
     ollama: 0.9

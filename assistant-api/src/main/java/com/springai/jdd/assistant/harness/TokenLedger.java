@@ -20,6 +20,10 @@ public class TokenLedger {
         rememberModel(response.getMetadata().getModel());
     }
 
+    public boolean isEmpty() {
+        return model == null && promptTokens == 0 && completionTokens == 0;
+    }
+
     public TokenUsage tally() {
         return TokenUsage.builder()
                          .model(model)

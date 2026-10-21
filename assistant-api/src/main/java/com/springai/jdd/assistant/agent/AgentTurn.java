@@ -89,9 +89,9 @@ public class AgentTurn {
         return answer;
     }
 
-    /** Only a real answer to an opening question is worth sharing through the semantic cache. */
+    /** Only a real answer is worth sharing through the semantic cache. */
     boolean isWorthCaching() {
-        return openingQuestion && !cacheHit && refused.isEmpty() && !stoppedEarly && !blank;
+        return !cacheHit && refused.isEmpty() && !stoppedEarly && !blank;
     }
 
     /** Snapshot of the turn — taken last, so the trail includes the harness's cache write-back. */
@@ -100,7 +100,8 @@ public class AgentTurn {
                            .message(answer)
                            .conversationId(conversationId)
                            .calls(trail.calls())
-                           .usage(cacheHit ? TokenUsage.builder().model(CACHE_MODEL).build() : tokens.tally())
+                           .usage(cacheHit && tokens.isEmpty() ? TokenUsage.builder().model(CACHE_MODEL).build()
+                                                               : tokens.tally())
                            .toolRounds(rounds.rounds())
                            .latencyMillis(Duration.ofNanos(System.nanoTime() - startedAt).toMillis())
                            .cacheHit(cacheHit)
