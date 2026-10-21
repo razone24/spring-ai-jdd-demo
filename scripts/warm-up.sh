@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# Loads the models into Ollama's memory before going on stage (the first call after a cold start can
-# take ~40 s), then clears the demo state so the warm-up questions don't show up as cache hits.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 

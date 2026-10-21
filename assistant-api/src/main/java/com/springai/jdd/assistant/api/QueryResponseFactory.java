@@ -69,6 +69,7 @@ public final class QueryResponseFactory {
                                   .resultPreview(call.resultPreview())
                                   .durationMillis(call.durationMillis())
                                   .error(call.error())
+                                  .round(call.round())
                                   .build();
     }
 

@@ -54,12 +54,6 @@ final class Agenda {
                         null, null),
             new Session(2, "10:00", "10:45", "Room A", JVM, "GraalVM Native Images for Spring Services", null, null),
             new Session(2, "10:00", "10:45", "Room C", CLOUD, "Kubernetes Cost Optimisation for Java Workloads", null, null),
-            new Session(2, "11:00", "11:45", "Room B", ARCHITECTURE + " / " + AI,
-                        "The Future of Software Architecture in the Age of AI",
-                        "Răzvan Bălașa (Playtika) & Adrian Coman (CrowdStrike)",
-                        "From a naive \"whole wiki in the prompt\" chatbot to RAG, a semantic cache and an agentic MCP "
-                        + "orchestrator — with a live Spring AI demo on a local LLM, guardrails, memory, audit and "
-                        + "Grafana dashboards."),
             new Session(2, "11:00", "11:45", "Room C", QUALITY, "Contract Testing in a Microservice Landscape", null, null),
             new Session(2, "12:00", "13:00", "Restaurant, ground floor", null, "Lunch", null, null),
             new Session(2, "13:00", "13:45", "Room D", AI, "Building MCP Servers in Java", null,
@@ -67,7 +61,13 @@ final class Agenda {
             new Session(2, "13:00", "13:45", "Room C", QUALITY, "Chaos Engineering on a Budget", null, null),
             new Session(2, "14:00", "14:45", "Room D", AI, "RAG Beyond the Demo: Chunking, Re-ranking and Freshness", null,
                         null),
-            new Session(2, "14:00", "14:45", "Room B", ARCHITECTURE, "Modular Monoliths with Spring Modulith", null, null),
+            new Session(2, "14:00", "14:45", "Track 1", ARCHITECTURE, "Modular Monoliths with Spring Modulith", null, null),
+            new Session(2, "15:00", "15:45", "Track 1", ARCHITECTURE + " / " + AI,
+                        "The Future of Software Architecture in the Age of AI",
+                        "Răzvan Bălașa (Playtika) & Adrian Coman (CrowdStrike)",
+                        "From a naive \"whole wiki in the prompt\" chatbot to RAG, a semantic cache and an agentic MCP "
+                        + "orchestrator — with a live Spring AI demo on a local LLM, guardrails, memory, audit and "
+                        + "Grafana dashboards."),
             new Session(2, "15:00", "15:45", "Room C", SECURITY, "Zero-Trust for Internal APIs", null, null),
             new Session(2, "15:45", "16:05", "Foyer", null, "Coffee break", null, null),
             new Session(2, "16:05", "16:50", "Room A", FUTURE, "CLOSING KEYNOTE — Engineers, Agents and the Craft", null,

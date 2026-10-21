@@ -10,7 +10,7 @@ export function AssistantTurn({ envelope, latencyMs }: { envelope: QueryEnvelope
   return (
     <div>
       <TurnMeta meta={meta} latencyMs={latencyMs} />
-      <ToolCallList calls={envelope.toolCalls} />
+      <ToolCallList calls={envelope.toolCalls} meta={meta} latencyMs={latencyMs} />
       {meta.refused ? (
         <RefusalNotice reason={meta.refusalReason} message={envelope.message} />
       ) : (

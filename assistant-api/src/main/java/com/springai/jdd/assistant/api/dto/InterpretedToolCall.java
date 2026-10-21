@@ -14,5 +14,6 @@ public record InterpretedToolCall(String name,
                                   String resultPreview,
                                   @JsonProperty("duration_ms")
                                   long durationMillis,
-                                  String error) {
+                                  String error,
+                                  int round) {
 }

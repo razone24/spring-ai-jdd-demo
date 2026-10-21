@@ -1,0 +1,22 @@
+.button {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+
+.button:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.button:active {
+  background: var(--surface-active);
+}

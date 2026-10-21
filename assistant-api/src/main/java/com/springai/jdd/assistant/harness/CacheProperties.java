@@ -10,13 +10,16 @@ import java.util.Set;
  * @param hitThreshold     minimum similarity (0..1) for a cached answer to be served without calling the model
  * @param maxAge           older cached answers are ignored, so a changed wiki stops being answered from the past
  * @param uncacheableTools answers that used one of these tools are never cached (live data goes stale)
+ * @param rewriteFollowUps follow-ups are rewritten into a standalone question (one small model call) so they
+ *                         can use the cache too; off, only a conversation's opening question does
  */
 @Builder
 @ConfigurationProperties(prefix = "assistant.cache")
 public record CacheProperties(boolean enabled,
                               double hitThreshold,
                               Duration maxAge,
-                              Set<String> uncacheableTools) {
+                              Set<String> uncacheableTools,
+                              boolean rewriteFollowUps) {
 
     public Set<String> uncacheableTools() {
         return uncacheableTools == null ? Set.of() : Set.copyOf(uncacheableTools);

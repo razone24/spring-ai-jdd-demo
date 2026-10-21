@@ -1,6 +1,8 @@
 package com.springai.jdd.assistant.agent;
 
+import com.springai.jdd.assistant.harness.CacheProperties;
 import com.springai.jdd.assistant.harness.CachedAnswer;
+import com.springai.jdd.assistant.harness.FollowUpRewriter;
 import com.springai.jdd.assistant.harness.SemanticCache;
 import com.springai.jdd.assistant.mcp.McpToolset;
 import com.springai.jdd.assistant.mcp.TracingToolCallback;
@@ -60,15 +62,17 @@ class OrchestratorAgentTest {
 
     private static final String SCHEDULE_TOOL = "getConferenceSchedule";
     private static final String SCHEDULE_SERVER = "conference-info-mcp";
-    private static final String SCHEDULE = "11:00–11:45 | The Future of Software Architecture in the Age of AI — Room B";
+    private static final String SCHEDULE = "15:00–15:45 | The Future of Software Architecture in the Age of AI — Track 1";
     private static final String REFUSE = "refuse";
     private static final String REFUSAL_ARGUMENTS = "{\"reason\":\"OUT_OF_SCOPE\"}";
     private static final String NO_ARGUMENTS = "{}";
 
     private static final String PROMPT = "When is the talk about AI architecture?";
-    private static final String ANSWER = "Wednesday 21 October, 11:00–11:45 in Room B.";
+    private static final String ANSWER = "Wednesday 21 October, 15:00–15:45 in Track 1.";
     private static final String FOLLOW_UP = "And who else speaks in that room?";
-    private static final String CACHED_ANSWER = "Wednesday, 11:00 in Room B (cached).";
+    private static final String STANDALONE_FOLLOW_UP = "Who else speaks in Track 1?";
+    private static final String REWRITE_TOOL = "rewriteFollowUp";
+    private static final String CACHED_ANSWER = "Wednesday, 15:00 in Track 1 (cached).";
     private static final String CONVERSATION_ID = "conversation-1";
     private static final String SYSTEM_PROMPT = "prompts/system-prompt.txt";
     private static final String SYSTEM_PROMPT_PHRASE = "JDD 2026 conference assistant";
@@ -90,6 +94,8 @@ class OrchestratorAgentTest {
                                                                  .build();
     private final OrchestratorAgent orchestrator = new OrchestratorAgent(chatClient(),
                                                                        new AgentTurns(toolset, chatMemory, properties()),
+                                                                       new FollowUpRewriter(chatModel, chatMemory,
+                                                                                            cacheProperties()),
                                                                        cache,
                                                                        chatMemory,
                                                                        new Today(clock, properties()),
@@ -165,6 +171,36 @@ class OrchestratorAgentTest {
     }
 
     @Test
+    void shouldStampEveryCallWithTheModelRoundItRanIn() {
+        AssistantMessage twoLookups = AssistantMessage.builder()
+                                                      .content("")
+                                                      .toolCalls(List.of(
+                                                              new AssistantMessage.ToolCall("call-1", "function",
+                                                                                            SCHEDULE_TOOL, NO_ARGUMENTS),
+                                                              new AssistantMessage.ToolCall("call-2", "function",
+                                                                                            SCHEDULE_TOOL, NO_ARGUMENTS)))
+                                                      .build();
+        when(chatModel.call(any(Prompt.class))).thenReturn(new ChatResponse(List.of(new Generation(twoLookups))),
+                                                          textResponse(ANSWER));
+        when(cache.lookup(anyString(), any())).thenAnswer(invocation -> {
+            invocation.<ToolTrail>getArgument(1).record(harnessCall("searchChatHistory"));
+            return Optional.empty();
+        });
+        doAnswer(invocation -> {
+            invocation.<ToolTrail>getArgument(2).record(harnessCall("recordChatHistory"));
+            return null;
+        }).when(cache).store(any(), any(), any());
+
+        QueryOutcome outcome = orchestrator.answer(PROMPT, CONVERSATION_ID);
+
+        assertThat(outcome.calls()).extracting(ToolCall::name, ToolCall::round)
+                                   .containsExactly(Tuple.tuple("searchChatHistory", 0),
+                                                    Tuple.tuple(SCHEDULE_TOOL, 1),
+                                                    Tuple.tuple(SCHEDULE_TOOL, 1),
+                                                    Tuple.tuple("recordChatHistory", 2));
+    }
+
+    @Test
     void shouldNeverShowOrCacheAnEmptyAnswer() {
         when(chatModel.call(any(Prompt.class))).thenReturn(toolCallResponse(SCHEDULE_TOOL, NO_ARGUMENTS),
                                                           textResponse(""));
@@ -176,15 +212,65 @@ class OrchestratorAgentTest {
     }
 
     @Test
-    void shouldKeepFollowUpsOutOfTheSharedCache() {
+    void shouldServeAFollowUpFromTheCacheUnderItsStandaloneQuestion() {
         when(chatModel.call(any(Prompt.class))).thenReturn(toolCallResponse(SCHEDULE_TOOL, NO_ARGUMENTS),
+                                                          textResponse(ANSWER),
+                                                          new ChatResponse(textResponse(STANDALONE_FOLLOW_UP).getResults(),
+                                                                           usageOf(90, 10)));
+        when(cache.lookup(eq(STANDALONE_FOLLOW_UP), any()))
+                .thenReturn(Optional.of(new CachedAnswer(STANDALONE_FOLLOW_UP, CACHED_ANSWER, 0.95)));
+        orchestrator.answer(PROMPT, CONVERSATION_ID);
+
+        QueryOutcome outcome = orchestrator.answer(FOLLOW_UP, CONVERSATION_ID);
+
+        assertThat(outcome.message()).isEqualTo(CACHED_ANSWER);
+        assertThat(outcome.cacheHit()).isTrue();
+        assertThat(outcome.usage().promptTokens()).isEqualTo(90);
+        assertThat(outcome.calls()).singleElement().satisfies(call -> {
+            assertThat(call.name()).isEqualTo(REWRITE_TOOL);
+            assertThat(call.origin()).isEqualTo(ToolOrigin.HARNESS);
+            assertThat(call.resultPreview()).isEqualTo(STANDALONE_FOLLOW_UP);
+        });
+        assertThat(chatMemory.get(CONVERSATION_ID)).extracting(Message::getText)
+                                                   .containsExactly(PROMPT, ANSWER, FOLLOW_UP, CACHED_ANSWER);
+        verify(chatModel, times(3)).call(any(Prompt.class));
+    }
+
+    @Test
+    void shouldRewriteAFollowUpFromTheConversationSoFar() {
+        when(chatModel.call(any(Prompt.class))).thenReturn(toolCallResponse(SCHEDULE_TOOL, NO_ARGUMENTS),
+                                                          textResponse(ANSWER),
+                                                          textResponse("\"" + STANDALONE_FOLLOW_UP + "\"\n"),
+                                                          toolCallResponse(SCHEDULE_TOOL, NO_ARGUMENTS),
                                                           textResponse(ANSWER));
         orchestrator.answer(PROMPT, CONVERSATION_ID);
 
         orchestrator.answer(FOLLOW_UP, CONVERSATION_ID);
+        ArgumentCaptor<Prompt> prompts = forClass(Prompt.class);
+        verify(chatModel, times(5)).call(prompts.capture());
 
+        Prompt rewrite = prompts.getAllValues().get(2);
+        assertThat(rewrite.getUserMessage().getText()).contains(PROMPT, ANSWER, FOLLOW_UP);
+        assertThat(rewrite.getOptions()).isNull();
+        verify(cache).lookup(eq(STANDALONE_FOLLOW_UP), any());
+        verify(cache).store(eq(STANDALONE_FOLLOW_UP), eq(ANSWER), any(ToolTrail.class));
         verify(cache, never()).lookup(eq(FOLLOW_UP), any());
-        verify(cache, never()).store(eq(FOLLOW_UP), any(), any());
+    }
+
+    @Test
+    void shouldKeepAFollowUpOutOfTheCacheWhenItCannotBeRewritten() {
+        when(chatModel.call(any(Prompt.class))).thenReturn(toolCallResponse(SCHEDULE_TOOL, NO_ARGUMENTS),
+                                                          textResponse(ANSWER),
+                                                          textResponse(" "),
+                                                          toolCallResponse(SCHEDULE_TOOL, NO_ARGUMENTS),
+                                                          textResponse(ANSWER));
+        orchestrator.answer(PROMPT, CONVERSATION_ID);
+
+        QueryOutcome outcome = orchestrator.answer(FOLLOW_UP, CONVERSATION_ID);
+
+        assertThat(outcome.message()).isEqualTo(ANSWER);
+        verify(cache, times(1)).lookup(anyString(), any());
+        verify(cache, times(1)).store(any(), any(), any());
     }
 
     @Test
@@ -242,7 +328,7 @@ class OrchestratorAgentTest {
 
     @Test
     void shouldSendAnAnswerWithoutAToolResultBackOnceAndRememberOnlyTheGroundedOne() {
-        when(chatModel.call(any(Prompt.class))).thenReturn(textResponse("Room B has a talk by someone famous."),
+        when(chatModel.call(any(Prompt.class))).thenReturn(textResponse("Track 1 has a talk by someone famous."),
                                                           toolCallResponse(SCHEDULE_TOOL, NO_ARGUMENTS),
                                                           textResponse(ANSWER));
 
@@ -266,13 +352,14 @@ class OrchestratorAgentTest {
     void shouldGroundThePromptInTheSystemPromptTodayAndTheEarlierTurn() {
         when(chatModel.call(any(Prompt.class))).thenReturn(toolCallResponse(SCHEDULE_TOOL, NO_ARGUMENTS),
                                                           textResponse(ANSWER),
+                                                          textResponse(STANDALONE_FOLLOW_UP),
                                                           toolCallResponse(SCHEDULE_TOOL, NO_ARGUMENTS),
                                                           textResponse(ANSWER));
 
         orchestrator.answer(PROMPT, CONVERSATION_ID);
         orchestrator.answer(FOLLOW_UP, CONVERSATION_ID);
         ArgumentCaptor<Prompt> prompts = forClass(Prompt.class);
-        verify(chatModel, times(4)).call(prompts.capture());
+        verify(chatModel, times(5)).call(prompts.capture());
 
         List<String> lastPrompt = prompts.getValue().getInstructions().stream().map(Message::getText).toList();
         assertThat(lastPrompt).anyMatch(text -> text.contains(SYSTEM_PROMPT_PHRASE) && text.contains(TODAYS_DATE));
@@ -316,6 +403,10 @@ class OrchestratorAgentTest {
                               .build();
     }
 
+    private static CacheProperties cacheProperties() {
+        return CacheProperties.builder().enabled(true).rewriteFollowUps(true).build();
+    }
+
     private static ToolCallback scheduleTool() {
         ToolDefinition definition = ToolDefinition.builder()
                                                   .name(SCHEDULE_TOOL)
@@ -342,6 +433,10 @@ class OrchestratorAgentTest {
                                                                                                     name, arguments)))
                                                    .build();
         return new ChatResponse(List.of(new Generation(message)));
+    }
+
+    private static ToolCall harnessCall(String name) {
+        return ToolCall.builder().name(name).origin(ToolOrigin.HARNESS).build();
     }
 
     private ChatResponse textResponse(String text) {

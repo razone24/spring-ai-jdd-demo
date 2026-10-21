@@ -1,5 +1,6 @@
 import type { Conversation, ConversationKey } from '../../domain/conversation';
 import { Button } from '../../ui/Button';
+import { ThemeToggle } from '../../ui/ThemeToggle';
 import { ConversationItem } from './ConversationItem';
 import styles from './Sidebar.module.css';
 
@@ -20,8 +21,11 @@ export function Sidebar({ conversations, activeKey, onCreate, onSelect }: Sideba
   return (
     <aside className={styles.sidebar}>
       <div className={styles.brand}>
-        <span className={styles.brandName}>{BRAND}</span>
-        <span className={styles.brandDetail}>{BRAND_DETAIL}</span>
+        <div className={styles.brandText}>
+          <span className={styles.brandName}>{BRAND}</span>
+          <span className={styles.brandDetail}>{BRAND_DETAIL}</span>
+        </div>
+        <ThemeToggle />
       </div>
       <header className={styles.header}>
         <h1 className={styles.heading}>{HEADING}</h1>

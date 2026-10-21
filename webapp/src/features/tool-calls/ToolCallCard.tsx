@@ -23,7 +23,7 @@ function parseJson(text: string): unknown {
   }
 }
 
-function ResultPreview({ text }: { text: string }) {
+export function ResultPreview({ text }: { text: string }) {
   const parsed = parseJson(text);
   if (parsed !== undefined && typeof parsed === 'object' && parsed !== null) {
     return <JsonView value={parsed} />;

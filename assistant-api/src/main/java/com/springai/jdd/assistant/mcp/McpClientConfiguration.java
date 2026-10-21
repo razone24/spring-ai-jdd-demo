@@ -12,7 +12,6 @@ class McpClientConfiguration {
 
     private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(2);
 
-    /** A server that is down should fail fast — the agent then answers from the other tools. */
     @Bean
     McpClientCustomizer<HttpClientStreamableHttpTransport.Builder> failFastMcpConnections() {
         return (connectionName, transport) -> transport.connectTimeout(CONNECT_TIMEOUT);

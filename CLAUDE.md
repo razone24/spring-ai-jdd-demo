@@ -44,7 +44,9 @@ cd webapp && npm run build && npm run lint     # UI checks
   plus `api` and `audit` plumbing.
 - **Harness vs model.** `OrchestratorAgent.answer()` is four steps: semantic-cache lookup, the model with its MCP
   tools, cache write-back, then pricing and audit. Only step 2 is a model decision. The cache steps call the
-  `HARNESS_ONLY` tools through `McpToolset.callAsHarness`. `AgentTurns.start()` gives the model every other MCP
+  `HARNESS_ONLY` tools through `McpToolset.callAsHarness`. A follow-up is first rewritten into a standalone
+  question by `FollowUpRewriter` (one tool-less model call, traced as HARNESS `rewriteFollowUp`), and that question
+  is the cache key for both lookup and write-back (`assistant.cache.rewrite-follow-ups`). `AgentTurns.start()` gives the model every other MCP
   tool plus the local `refuse` tool.
 - **Advisor chain.** `AgentConfiguration` builds the `ChatClient` with `MessageChatMemoryAdvisor` →
   `GroundingAdvisor` → `BoundedToolLoopAdvisor` (the tool loop). All per-question state lives in one `AgentTurn`,

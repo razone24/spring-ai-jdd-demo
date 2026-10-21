@@ -13,6 +13,8 @@ export type ToolCall = {
   resultPreview: string | null;
   durationMs: number;
   error: string | null;
+  /** The model round the call ran in: 0 before the tool loop, then 1, 2, … */
+  round: number;
 };
 
 export type QueryMeta = {

@@ -38,12 +38,12 @@ class ConferenceToolsTest {
 
     @Test
     void filtersByDayAndRoom() {
-        String roomB = schedule.getConferenceSchedule(2, "Room B", null, null);
+        String track1 = schedule.getConferenceSchedule(2, "Track 1", null, null);
 
-        assertThat(roomB).contains("The Future of Software Architecture in the Age of AI",
-                                   "Modular Monoliths with Spring Modulith")
-                         .doesNotContain("Contract Testing", "Event-Driven Architecture");
-        assertThat(schedule.getConferenceSchedule(2, "B", null, null)).isEqualTo(roomB);
+        assertThat(track1).contains("The Future of Software Architecture in the Age of AI",
+                                    "Modular Monoliths with Spring Modulith")
+                          .doesNotContain("Contract Testing", "Zero-Trust", "Event-Driven Architecture");
+        assertThat(schedule.getConferenceSchedule(2, "1", null, null)).isEqualTo(track1);
     }
 
     @Test
@@ -57,14 +57,14 @@ class ConferenceToolsTest {
     @Test
     void findsTheSpeakersTalkByKeyword() {
         assertThat(schedule.getConferenceSchedule(null, null, null, "Bălașa"))
-                .contains("11:00–11:45 | The Future of Software Architecture in the Age of AI — Room B")
+                .contains("15:00–15:45 | The Future of Software Architecture in the Age of AI — Track 1")
                 .doesNotContain("Day 1");
     }
 
     @Test
     void saysExplicitlyWhenATalksSpeakersAreNotAnnounced() {
-        assertThat(schedule.getConferenceSchedule(2, "Room B", null, "Modulith"))
-                .contains("Modular Monoliths with Spring Modulith — Room B", "Speakers: to be announced");
+        assertThat(schedule.getConferenceSchedule(2, "Track 1", null, "Modulith"))
+                .contains("Modular Monoliths with Spring Modulith — Track 1", "Speakers: to be announced");
     }
 
     @Test

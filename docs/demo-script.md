@@ -63,7 +63,7 @@ Everything under *Extra time / Q&A* is optional.
 - Expand `getConferenceSchedule`: **the model chose the filter** (`keyword: "software architecture ai"`), and the
   MCP server returned only the matching session.
 - Point at the badges: **harness** = deterministic code, **model** = an LLM decision. *"Agent = Model + Harness."*
-- Answer: Wednesday 21 October, 11:00–11:45, Room B.
+- Answer: Wednesday 21 October, 15:00–15:45, Track 1.
 
 ### Q2 · RAG (≈ 1 min)
 
@@ -91,7 +91,7 @@ Everything under *Extra time / Q&A* is optional.
 
 Go back to the **Q1 conversation** and **ask:** `Who else is speaking in that room on the same day?`
 
-- Memory resolved "that room" and "the same day": the trace shows `getConferenceSchedule {day: 2, room: "Room B"}`.
+- Memory resolved "that room" and "the same day": the trace shows `getConferenceSchedule {day: 2, room: "Track 1"}`.
   The answer adds *Modular Monoliths with Spring Modulith* at 14:00, speakers to be announced.
 - The header shows **↻ grounding guard**, and does on every rehearsal. The model first answered *from memory*,
   without a tool. The harness threw that draft away and sent it back to look the facts up. *"Small models do this;

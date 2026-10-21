@@ -4,6 +4,7 @@ import com.springai.jdd.assistant.audit.QueryAuditFactory;
 import com.springai.jdd.assistant.audit.QueryAuditor;
 import com.springai.jdd.assistant.audit.cost.TokenPricing;
 import com.springai.jdd.assistant.harness.CachedAnswer;
+import com.springai.jdd.assistant.harness.FollowUpRewriter;
 import com.springai.jdd.assistant.harness.SemanticCache;
 import com.springai.jdd.assistant.harness.ToolRoundLimitException;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,7 @@ public class OrchestratorAgent {
 
     private final ChatClient chatClient;
     private final AgentTurns turns;
+    private final FollowUpRewriter rewriter;
     private final SemanticCache semanticCache;
     private final ChatMemory chatMemory;
     private final Today today;
@@ -46,10 +48,10 @@ public class OrchestratorAgent {
         AgentTurn turn = turns.start(question, conversationId);
 
         // 1. Semantic cache: a question someone already asked is answered in milliseconds, without the LLM.
-        //    Only opening questions — a follow-up ("and where is it?") means nothing outside its conversation.
-        Optional<CachedAnswer> cached = turn.isOpeningQuestion()
-                                        ? semanticCache.lookup(question, turn.trail())
-                                        : Optional.empty();
+        //    A follow-up ("and where is it?") means nothing outside its conversation, so it is first
+        //    rewritten into a standalone question — one small model call instead of a full tool loop.
+        Optional<String> standalone = rewriter.standalone(turn);
+        Optional<CachedAnswer> cached = standalone.flatMap(key -> semanticCache.lookup(key, turn.trail()));
         if (cached.isPresent()) {
             remember(turn, turn.acceptCachedAnswer(cached.get().answer()));
             return audited(turn);
@@ -58,9 +60,9 @@ public class OrchestratorAgent {
         // 2. The model decides which MCP tools to call; the advisors keep it bounded and grounded.
         String answer = turn.acceptModelAnswer(askModel(turn));
 
-        // 3. A good opening answer goes back into the cache for the next person who asks.
-        if (turn.isWorthCaching()) {
-            semanticCache.store(question, answer, turn.trail());
+        // 3. A good answer goes back into the cache, under its standalone question, for the next person who asks.
+        if (standalone.isPresent() && turn.isWorthCaching()) {
+            semanticCache.store(standalone.get(), answer, turn.trail());
         }
 
         // 4. Every answer is priced and audited: logs, metrics and the database behind Grafana.

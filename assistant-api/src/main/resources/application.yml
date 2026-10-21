@@ -12,8 +12,6 @@ spring:
       - org.springframework.ai.model.chat.memory.repository.jdbc.autoconfigure.JdbcChatMemoryRepositoryAutoConfiguration
 
   ai:
-    # Which chat model backs the agent: LLM_PROVIDER=openai (default) or ollama (local). The MCP servers'
-    # embeddings follow the same switch; llm-provider-check fails startup clearly if the provider isn't usable.
     model:
       chat: ${llm.provider:openai}
       embedding: none
@@ -26,10 +24,8 @@ spring:
       base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
       chat:
         model: ${OLLAMA_MODEL:qwen2.5:7b-instruct}
-        temperature: 0.0
-        # A fixed seed with temperature 0 makes a rehearsed question take the same path on stage.
+        temperature: 0.1
         seed: 42
-        # Ollama's default context window is small; tool definitions + the agenda need room.
         num-ctx: ${OLLAMA_NUM_CTX:16384}
         keep-alive: 30m
       init:
@@ -47,7 +43,6 @@ spring:
       client:
         name: assistant-api
         type: sync
-        # Clients connect lazily (see McpToolset) so the agent starts even if a server is still booting.
         initialized: false
         request-timeout: 30s
         toolcallback:
@@ -76,7 +71,7 @@ assistant:
     hit-threshold: ${ASSISTANT_CACHE_HIT_THRESHOLD:${assistant.cache-hit-thresholds.${llm.provider:openai}}}
     max-age: ${ASSISTANT_CACHE_MAX_AGE:24h}
     uncacheable-tools: searchWeb
-  # Similarity scores differ per embedding model, so the default cache-hit bar does too.
+    rewrite-follow-ups: ${ASSISTANT_CACHE_REWRITE_FOLLOW_UPS:true}
   cache-hit-thresholds:
     openai: 0.8
     ollama: 0.9
@@ -84,12 +79,10 @@ assistant:
     burst: ${ASSISTANT_RATE_LIMIT_BURST:30}
     per-second: ${ASSISTANT_RATE_LIMIT_PER_SECOND:2}
     max-clients: 10000
-  # USD per million tokens, keyed by the model id the provider reports back. A local model costs
-  # nothing to call; it is priced at gpt-4o-mini rates so the dashboard shows the cloud-equivalent spend.
   pricing:
     "[qwen2.5:7b-instruct]":
-      input-per-million: 0.15
-      output-per-million: 0.60
+      input-per-million: 0.0
+      output-per-million: 0.0
     "[gpt-4o-mini-2024-07-18]":
       input-per-million: 0.15
       output-per-million: 0.60
